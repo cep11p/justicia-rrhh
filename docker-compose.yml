@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laravel-app
+    volumes:
+      - ./app:/var/www/html
+    depends_on:
+      - db
+
+  web:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "8080:80"
+
+    volumes:
+      - ./app:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+
+  db:
+    image: mariadb:10.6
+    container_name: mariadb
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db_data:/var/lib/mysql
+      
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.3
+    container_name: keycloak
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db
+
+
+volumes:
+  db_data:
+
