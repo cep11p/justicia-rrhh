@@ -5,9 +5,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: laravel-app
+    container_name: justicia-rrhh-backend
     volumes:
-      - ./app:/var/www/html
+      - ./rrhh-backend:/var/www/html
     depends_on:
       - db
 
