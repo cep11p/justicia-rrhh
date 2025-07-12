@@ -92,3 +92,30 @@ Depende de la base de datos para poder almacenar usuarios/realms si migrás a un
 
 Volúmenes
 db_data: volumen Docker para persistir la data de MariaDB entre reinicios.
+
+#Migraciones, Seeders y Factories
+
+# 1. Estado inicial
+docker compose exec app php artisan migrate:status
+
+# 2. Migración fresca con seeders
+docker compose exec app php artisan migrate:fresh --seed
+
+# 3. Verificar datos
+docker compose exec app php artisan tinker
+# En tinker: App\Models\Persona::count() // Debería mostrar 10
+
+# 4. Rollback completo
+docker compose exec app php artisan migrate:rollback
+
+# 5. Migración sin seeders
+docker compose exec app php artisan migrate
+
+# 6. Ejecutar solo seeders
+docker compose exec app php artisan db:seed
+
+# 7. Refresh completo
+docker compose exec app php artisan migrate:refresh --seed
+
+# 8.Para ejecutar los seeders:
+docker compose exec app php artisan db:seed
