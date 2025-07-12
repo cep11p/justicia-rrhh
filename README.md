@@ -95,10 +95,6 @@ db_data: volumen Docker para persistir la data de MariaDB entre reinicios.
 
 #Migraciones, Seeders y Factories
 
-
-Para ejecutar los seeders:
-docker compose exec app php artisan db:seed
-
 # 1. Estado inicial
 docker compose exec app php artisan migrate:status
 
@@ -120,3 +116,6 @@ docker compose exec app php artisan db:seed
 
 # 7. Refresh completo
 docker compose exec app php artisan migrate:refresh --seed
+
+# 8.Para ejecutar los seeders:
+docker compose exec app php artisan db:seed
