@@ -92,3 +92,6 @@ Depende de la base de datos para poder almacenar usuarios/realms si migrás a un
 
 Volúmenes
 db_data: volumen Docker para persistir la data de MariaDB entre reinicios.
+
+Para ejecutar los seeders:
+docker compose exec app php artisan db:seed
