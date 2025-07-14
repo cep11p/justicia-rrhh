@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('estructuras_organizativas', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
+            $table->text('descripcion')->nullable();
+            $table->foreignId('padre_id')->nullable()->constrained('estructuras_organizativas')->onDelete('set null');
             $table->timestamps();
         });
     }
