@@ -342,4 +342,108 @@ class EmpleadoTest extends TestCase
             'importe' => 50000.00,
         ]);
     }
+
+    /** @test */
+    public function getDesignacionesParaPeriodo_sin_designaciones()
+    {
+        // Limpiar designaciones
+        $this->empleado->designaciones()->delete();
+
+        // Debug: imprimir designaciones existentes
+        $todas = $this->empleado->designaciones()->get();
+        fwrite(STDERR, "Designaciones antes del test (sin): " . $todas->count() . "\n");
+
+        // Act - Buscar designaciones para un período sin designaciones
+        $resultado = $this->empleado->getDesignacionesParaPeriodo('202401');
+
+        // Assert - Debe retornar Collection vacía
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $resultado);
+        $this->assertCount(0, $resultado);
+        $this->assertTrue($resultado->isEmpty());
+    }
+
+    /** @test */
+    public function getDesignacionesParaPeriodo_una_designacion()
+    {
+        // Limpiar designaciones
+        $this->empleado->designaciones()->delete();
+
+        // Arrange - Crear una designación para diciembre 2024
+        $designacion = Designacion::create([
+            'fecha_inicio' => '2024-01-01',
+            'fecha_fin' => '2024-12-31',
+            'empleado_id' => $this->empleado->id,
+            'estructura_organizativa_id' => $this->estructura->id,
+            'cargo_id' => $this->cargo->id,
+        ]);
+
+        // Debug: imprimir designaciones existentes
+        $todas = $this->empleado->designaciones()->get();
+        fwrite(STDERR, "Designaciones antes del test (una): " . $todas->count() . "\n");
+
+        // Act - Buscar designaciones para diciembre 2024
+        $resultado = $this->empleado->getDesignacionesParaPeriodo('202412');
+
+        // Assert - Debe retornar Collection con una designación
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $resultado);
+        $this->assertCount(1, $resultado);
+        $this->assertFalse($resultado->isEmpty());
+        $this->assertEquals($designacion->id, $resultado->first()->id);
+    }
+
+    /** @test */
+    public function getDesignacionesParaPeriodo_multiples_designaciones()
+    {
+        // Limpiar designaciones
+        $this->empleado->designaciones()->delete();
+
+        // Arrange - Crear múltiples designaciones para diciembre 2024
+        $designacion1 = Designacion::create([
+            'fecha_inicio' => '2024-01-01',
+            'fecha_fin' => '2024-12-31',
+            'empleado_id' => $this->empleado->id,
+            'estructura_organizativa_id' => $this->estructura->id,
+            'cargo_id' => $this->cargo->id,
+        ]);
+
+        $designacion2 = Designacion::create([
+            'fecha_inicio' => '2024-06-01',
+            'fecha_fin' => '2024-12-31',
+            'empleado_id' => $this->empleado->id,
+            'estructura_organizativa_id' => $this->estructura->id,
+            'cargo_id' => $this->cargo->id,
+        ]);
+
+        // Debug: imprimir designaciones existentes
+        $todas = $this->empleado->designaciones()->get();
+        fwrite(STDERR, "Designaciones antes del test (multiples): " . $todas->count() . "\n");
+
+        // Act - Buscar designaciones para diciembre 2024
+        $resultado = $this->empleado->getDesignacionesParaPeriodo('202412');
+
+        // Assert - Debe retornar Collection con múltiples designaciones
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $resultado);
+        $this->assertCount(2, $resultado);
+        $this->assertFalse($resultado->isEmpty());
+
+        // Verificar que contiene ambas designaciones
+        $designacionIds = $resultado->pluck('id')->toArray();
+        $this->assertContains($designacion1->id, $designacionIds);
+        $this->assertContains($designacion2->id, $designacionIds);
+
+        // Verificar que están ordenadas por fecha_inicio descendente
+        $this->assertEquals($designacion2->id, $resultado->first()->id); // La más reciente primero
+        $this->assertEquals($designacion1->id, $resultado->last()->id);  // La más antigua al final
+    }
+
+    /** @test */
+    public function getDesignacionesParaPeriodo_lanza_excepcion_formato_invalido()
+    {
+        // Assert - Debe lanzar excepción con formato inválido
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('El período debe tener formato YYYYMM (ej: 202412)');
+
+        // Act - Usar formato inválido
+        $this->empleado->getDesignacionesParaPeriodo('2024');
+    }
 }
