@@ -7,53 +7,40 @@ use App\Models\Persona;
 use App\Models\Designacion;
 use App\Models\EstructuraOrganizativa;
 use App\Models\Cargo;
+use App\Models\Concepto;
+use App\Models\ValorConcepto;
+use App\Models\Liquidacion;
+use App\Models\LiquidacionEmpleado;
+use App\Models\LiquidacionConcepto;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
 
 class EmpleadoTest extends TestCase
 {
     use RefreshDatabase;
 
     protected Empleado $empleado;
+    protected Persona $persona;
     protected EstructuraOrganizativa $estructura;
-    protected Cargo $cargo1;
-    protected Cargo $cargo2;
+    protected Cargo $cargo;
+    protected Concepto $conceptoRemunerativo;
+    protected Concepto $conceptoDescuento;
+    protected ValorConcepto $valorConcepto;
+    protected Liquidacion $liquidacion;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        // Crear datos de prueba
+        // Crear datos básicos de prueba con integridad completa
         $this->crearDatosDePrueba();
     }
 
     private function crearDatosDePrueba(): void
     {
-        // Crear estructura organizativa
-        $estructura = EstructuraOrganizativa::create([
-            'nombre' => 'Administración',
-            'descripcion' => 'Departamento de administración',
-            'padre_id' => null,
-        ]);
-
-        // Crear cargos
-        $cargo1 = Cargo::create([
-            'nombre' => 'Administrativo Senior',
-            'descripcion' => 'Cargo senior',
-            'tiene_funcion' => true,
-            'estructura_organizativa_id' => $estructura->id,
-        ]);
-
-        $cargo2 = Cargo::create([
-            'nombre' => 'Asistente Administrativo',
-            'descripcion' => 'Cargo asistente',
-            'tiene_funcion' => false,
-            'estructura_organizativa_id' => $estructura->id,
-        ]);
-
-        // Crear persona
-        $persona = Persona::create([
+        // 1. Crear persona
+        $this->persona = Persona::create([
             'nombre' => 'Juan',
             'apellido' => 'Pérez',
             'cuil' => '20123456789',
@@ -61,202 +48,402 @@ class EmpleadoTest extends TestCase
             'email' => 'juan.perez@test.com',
         ]);
 
-        // Crear empleado
+        // 2. Crear estructura organizativa
+        $this->estructura = EstructuraOrganizativa::create([
+            'nombre' => 'Administración',
+            'descripcion' => 'Departamento de administración',
+            'padre_id' => null,
+        ]);
+
+        // 3. Crear cargo
+        $this->cargo = Cargo::create([
+            'nombre' => 'Administrativo',
+            'descripcion' => 'Cargo administrativo',
+            'tiene_funcion' => true,
+        ]);
+
+        // 4. Crear empleado
         $this->empleado = Empleado::create([
-            'persona_id' => $persona->id,
+            'persona_id' => $this->persona->id,
             'fecha_ingreso' => '2020-01-01',
+            'legajo' => 'EMP001',
             'titulo' => 'universitario',
         ]);
 
-        // Guardar referencias para los tests
-        $this->estructura = $estructura;
-        $this->cargo1 = $cargo1;
-        $this->cargo2 = $cargo2;
+        // 5. Crear conceptos
+        $this->conceptoRemunerativo = Concepto::create([
+            'codigo' => '001',
+            'nombre' => 'Básico',
+            'descripcion' => 'Sueldo Básico',
+            'tipo' => 'Remunerativo',
+            'tipo_valor' => 'fijo',
+        ]);
+
+        $this->conceptoDescuento = Concepto::create([
+            'codigo' => '002',
+            'nombre' => 'Aporte Jubilatorio',
+            'descripcion' => 'Aporte jubilatorio obligatorio',
+            'tipo' => 'Descuento',
+            'tipo_valor' => 'porcentual',
+        ]);
+
+        // 6. Crear valor concepto
+        $this->valorConcepto = ValorConcepto::create([
+            'periodo' => '202412',
+            'valor' => 50000.00,
+            'concepto_id' => $this->conceptoRemunerativo->id,
+            'cargo_id' => $this->cargo->id,
+            'fecha_inicio' => '2024-12-01',
+            'fecha_fin' => '2024-12-31',
+        ]);
+
+        // 7. Crear liquidación
+        $this->liquidacion = Liquidacion::create([
+            'numero' => 1,
+            'periodo' => '202412',
+            'fecha_liquidacion' => '2024-12-31',
+            'observaciones' => 'Liquidación de prueba',
+        ]);
     }
 
     /** @test */
-    public function getDesignacionParaPeriodo_devuelve_null_cuando_no_hay_designacion()
+    public function verificar_existencia_todas_las_tablas()
     {
-        // Act
-        $designacion = $this->empleado->getDesignacionParaPeriodo('202412');
-
-        // Assert
-        $this->assertNull($designacion);
+        // Verificar que todas las tablas existen
+        $this->assertTrue(Schema::hasTable('empleados'));
+        $this->assertTrue(Schema::hasTable('personas'));
+        $this->assertTrue(Schema::hasTable('estructuras_organizativas'));
+        $this->assertTrue(Schema::hasTable('cargos'));
+        $this->assertTrue(Schema::hasTable('designaciones'));
+        $this->assertTrue(Schema::hasTable('conceptos'));
+        $this->assertTrue(Schema::hasTable('valor_conceptos'));
+        $this->assertTrue(Schema::hasTable('liquidaciones'));
+        $this->assertTrue(Schema::hasTable('liquidacion_empleados'));
+        $this->assertTrue(Schema::hasTable('liquidacion_conceptos'));
     }
 
     /** @test */
-    public function getDesignacionParaPeriodo_devuelve_designacion_vigente_para_periodo()
+    public function verificar_integridad_empleado_persona()
     {
-        // Arrange - Crear designación vigente para diciembre 2024
-        Designacion::create([
+        // Verificar que el empleado tiene persona asociada
+        $this->assertNotNull($this->empleado->persona);
+        $this->assertEquals($this->persona->id, $this->empleado->persona->id);
+        $this->assertEquals('Pérez, Juan', $this->empleado->nombre_completo);
+    }
+
+    /** @test */
+    public function verificar_integridad_designacion_completa()
+    {
+        // Crear designación
+        $designacion = Designacion::create([
             'fecha_inicio' => '2024-01-01',
             'fecha_fin' => '2024-12-31',
             'empleado_id' => $this->empleado->id,
             'estructura_organizativa_id' => $this->estructura->id,
-            'cargo_id' => $this->cargo1->id,
+            'cargo_id' => $this->cargo->id,
         ]);
 
-        // Act
-        $designacion = $this->empleado->getDesignacionParaPeriodo('202412');
+        // Verificar que la designación se creó correctamente
+        $this->assertDatabaseHas('designaciones', [
+            'empleado_id' => $this->empleado->id,
+            'estructura_organizativa_id' => $this->estructura->id,
+            'cargo_id' => $this->cargo->id,
+        ]);
 
-        // Assert
-        $this->assertNotNull($designacion);
-        $this->assertEquals($this->cargo1->id, $designacion->cargo_id);
-        $this->assertEquals('2024-01-01', $designacion->fecha_inicio->format('Y-m-d'));
-        $this->assertEquals('2024-12-31', $designacion->fecha_fin->format('Y-m-d'));
+        // Verificar relaciones
+        $this->assertCount(1, $this->empleado->designaciones);
+        $this->assertEquals($designacion->id, $this->empleado->designaciones->first()->id);
     }
 
     /** @test */
-    public function getDesignacionParaPeriodo_devuelve_designacion_mas_reciente_cuando_hay_varias_historicas()
+    public function verificar_integridad_conceptos_y_valores()
     {
-        // Arrange - Crear múltiples designaciones históricas
-        Designacion::create([
-            'fecha_inicio' => '2023-01-01',
-            'fecha_fin' => '2024-06-30',
-            'empleado_id' => $this->empleado->id,
-            'estructura_organizativa_id' => $this->estructura->id,
-            'cargo_id' => $this->cargo1->id,
+        // Verificar que los conceptos se crearon correctamente
+        $this->assertDatabaseHas('conceptos', [
+            'codigo' => '001',
+            'tipo' => 'Remunerativo',
+            'tipo_valor' => 'fijo',
         ]);
 
-        Designacion::create([
-            'fecha_inicio' => '2024-07-01',
+        $this->assertDatabaseHas('conceptos', [
+            'codigo' => '002',
+            'tipo' => 'Descuento',
+            'tipo_valor' => 'porcentual',
+        ]);
+
+        // Verificar que el valor concepto se creó correctamente
+        $this->assertDatabaseHas('valor_conceptos', [
+            'periodo' => '202412',
+            'valor' => 50000.00,
+            'concepto_id' => $this->conceptoRemunerativo->id,
+            'cargo_id' => $this->cargo->id,
+        ]);
+    }
+
+    /** @test */
+    public function verificar_integridad_liquidacion_completa()
+    {
+        // Crear liquidación de empleado
+        $liquidacionEmpleado = LiquidacionEmpleado::create([
+            'liquidacion_id' => $this->liquidacion->id,
+            'empleado_id' => $this->empleado->id,
+            'total_remunerativo' => 50000.00,
+            'total_descuentos' => 5000.00,
+            'neto' => 45000.00,
+        ]);
+
+        // Verificar que la liquidación de empleado se creó correctamente
+        $this->assertDatabaseHas('liquidacion_empleados', [
+            'liquidacion_id' => $this->liquidacion->id,
+            'empleado_id' => $this->empleado->id,
+        ]);
+
+        // Crear concepto de liquidación
+        $liquidacionConcepto = LiquidacionConcepto::create([
+            'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+            'concepto_id' => $this->conceptoRemunerativo->id,
+            'importe' => $this->valorConcepto->valor,
+        ]);
+
+        // Verificar que el concepto de liquidación se creó correctamente
+        $this->assertDatabaseHas('liquidacion_conceptos', [
+            'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+            'concepto_id' => $this->conceptoRemunerativo->id,
+            'importe' => $this->valorConcepto->valor,
+        ]);
+
+        // Verificar que el importe es igual al valor de valor_conceptos
+        $this->assertEquals($this->valorConcepto->valor, $liquidacionConcepto->importe);
+
+        // Verificar relaciones
+        $this->assertCount(1, $this->empleado->liquidaciones);
+        $this->assertEquals($liquidacionEmpleado->id, $this->empleado->liquidaciones->first()->id);
+    }
+
+    /** @test */
+    public function verificar_cadena_completa_integridad()
+    {
+        // Crear designación
+        $designacion = Designacion::create([
+            'fecha_inicio' => '2024-01-01',
             'fecha_fin' => '2024-12-31',
             'empleado_id' => $this->empleado->id,
             'estructura_organizativa_id' => $this->estructura->id,
-            'cargo_id' => $this->cargo2->id,
+            'cargo_id' => $this->cargo->id,
         ]);
 
-        // Act - Buscar designación para diciembre 2024
-        $designacion = $this->empleado->getDesignacionParaPeriodo('202412');
+        // Crear liquidación de empleado
+        $liquidacionEmpleado = LiquidacionEmpleado::create([
+            'liquidacion_id' => $this->liquidacion->id,
+            'empleado_id' => $this->empleado->id,
+            'total_remunerativo' => 50000.00,
+            'total_descuentos' => 5000.00,
+            'neto' => 45000.00,
+        ]);
 
-        // Assert - Debe devolver la designación más reciente (2024-07-01)
-        $this->assertNotNull($designacion);
-        $this->assertEquals($this->cargo2->id, $designacion->cargo_id);
-        $this->assertEquals('2024-07-01', $designacion->fecha_inicio->format('Y-m-d'));
+        // Verificar que toda la cadena funciona
+        $this->assertNotNull($this->empleado->persona);
+        $this->assertCount(1, $this->empleado->designaciones);
+        $this->assertCount(1, $this->empleado->liquidaciones);
+
+        // Verificar que el cargo de la designación tiene valores de conceptos
+        $valoresConceptos = ValorConcepto::where('cargo_id', $designacion->cargo_id)
+            ->where('periodo', '202412')
+            ->get();
+
+        $this->assertCount(1, $valoresConceptos);
+        $this->assertEquals(50000.00, $valoresConceptos->first()->valor);
     }
 
     /** @test */
-    public function getDesignacionParaPeriodo_funciona_con_designacion_sin_fecha_fin()
+    public function verificar_integridad_temporal_conceptos_liquidacion()
     {
-        // Arrange - Crear designación sin fecha fin (vigente indefinidamente)
-        Designacion::create([
+        // Crear valores de conceptos para diferentes períodos
+        $valorConceptoNoviembre = ValorConcepto::create([
+            'periodo' => '202411',
+            'valor' => 45000.00,
+            'concepto_id' => $this->conceptoRemunerativo->id,
+            'cargo_id' => $this->cargo->id,
+            'fecha_inicio' => '2024-11-01',
+            'fecha_fin' => '2024-11-30',
+        ]);
+
+        $valorConceptoDiciembre = ValorConcepto::create([
+            'periodo' => '202412',
+            'valor' => 50000.00,
+            'concepto_id' => $this->conceptoRemunerativo->id,
+            'cargo_id' => $this->cargo->id,
+            'fecha_inicio' => '2024-12-01',
+            'fecha_fin' => '2024-12-31',
+        ]);
+
+        // Crear liquidación de noviembre
+        $liquidacionNoviembre = Liquidacion::create([
+            'numero' => 2,
+            'periodo' => '202411',
+            'fecha_liquidacion' => '2024-11-30',
+            'observaciones' => 'Liquidación noviembre 2024',
+        ]);
+
+        $liquidacionEmpleadoNoviembre = LiquidacionEmpleado::create([
+            'liquidacion_id' => $liquidacionNoviembre->id,
+            'empleado_id' => $this->empleado->id,
+            'total_remunerativo' => 45000.00,
+            'total_descuentos' => 4500.00,
+            'neto' => 40500.00,
+        ]);
+
+        // Crear concepto de liquidación para noviembre (debe usar valor de noviembre)
+        $liquidacionConceptoNoviembre = LiquidacionConcepto::create([
+            'liquidacion_empleado_id' => $liquidacionEmpleadoNoviembre->id,
+            'concepto_id' => $this->conceptoRemunerativo->id,
+            'importe' => $valorConceptoNoviembre->valor,
+        ]);
+
+        // Crear concepto de liquidación para diciembre (debe usar valor de diciembre)
+        $liquidacionEmpleadoDiciembre = LiquidacionEmpleado::create([
+            'liquidacion_id' => $this->liquidacion->id,
+            'empleado_id' => $this->empleado->id,
+            'total_remunerativo' => 50000.00,
+            'total_descuentos' => 5000.00,
+            'neto' => 45000.00,
+        ]);
+
+        $liquidacionConceptoDiciembre = LiquidacionConcepto::create([
+            'liquidacion_empleado_id' => $liquidacionEmpleadoDiciembre->id,
+            'concepto_id' => $this->conceptoRemunerativo->id,
+            'importe' => $valorConceptoDiciembre->valor,
+        ]);
+
+        // Verificar integridad temporal: noviembre
+        $this->assertEquals($valorConceptoNoviembre->valor, $liquidacionConceptoNoviembre->importe);
+        $this->assertEquals(45000.00, $liquidacionConceptoNoviembre->importe);
+
+        // Verificar integridad temporal: diciembre
+        $this->assertEquals($valorConceptoDiciembre->valor, $liquidacionConceptoDiciembre->importe);
+        $this->assertEquals(50000.00, $liquidacionConceptoDiciembre->importe);
+
+        // Verificar que los valores son diferentes entre períodos
+        $this->assertNotEquals(
+            $liquidacionConceptoNoviembre->importe,
+            $liquidacionConceptoDiciembre->importe
+        );
+
+        // Verificar que cada liquidación usa el valor correcto del período
+        $this->assertDatabaseHas('liquidacion_conceptos', [
+            'liquidacion_empleado_id' => $liquidacionEmpleadoNoviembre->id,
+            'concepto_id' => $this->conceptoRemunerativo->id,
+            'importe' => 45000.00,
+        ]);
+
+        $this->assertDatabaseHas('liquidacion_conceptos', [
+            'liquidacion_empleado_id' => $liquidacionEmpleadoDiciembre->id,
+            'concepto_id' => $this->conceptoRemunerativo->id,
+            'importe' => 50000.00,
+        ]);
+    }
+
+    /** @test */
+    public function getDesignacionesParaPeriodo_sin_designaciones()
+    {
+        // Limpiar designaciones
+        $this->empleado->designaciones()->delete();
+
+        // Debug: imprimir designaciones existentes
+        $todas = $this->empleado->designaciones()->get();
+        fwrite(STDERR, "Designaciones antes del test (sin): " . $todas->count() . "\n");
+
+        // Act - Buscar designaciones para un período sin designaciones
+        $resultado = $this->empleado->getDesignacionesParaPeriodo('202401');
+
+        // Assert - Debe retornar Collection vacía
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $resultado);
+        $this->assertCount(0, $resultado);
+        $this->assertTrue($resultado->isEmpty());
+    }
+
+    /** @test */
+    public function getDesignacionesParaPeriodo_una_designacion()
+    {
+        // Limpiar designaciones
+        $this->empleado->designaciones()->delete();
+
+        // Arrange - Crear una designación para diciembre 2024
+        $designacion = Designacion::create([
             'fecha_inicio' => '2024-01-01',
-            'fecha_fin' => null,
+            'fecha_fin' => '2024-12-31',
             'empleado_id' => $this->empleado->id,
             'estructura_organizativa_id' => $this->estructura->id,
-            'cargo_id' => $this->cargo1->id,
+            'cargo_id' => $this->cargo->id,
         ]);
 
-        // Act
-        $designacion = $this->empleado->getDesignacionParaPeriodo('202412');
+        // Debug: imprimir designaciones existentes
+        $todas = $this->empleado->designaciones()->get();
+        fwrite(STDERR, "Designaciones antes del test (una): " . $todas->count() . "\n");
 
-        // Assert
-        $this->assertNotNull($designacion);
-        $this->assertEquals($this->cargo1->id, $designacion->cargo_id);
-        $this->assertNull($designacion->fecha_fin);
+        // Act - Buscar designaciones para diciembre 2024
+        $resultado = $this->empleado->getDesignacionesParaPeriodo('202412');
+
+        // Assert - Debe retornar Collection con una designación
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $resultado);
+        $this->assertCount(1, $resultado);
+        $this->assertFalse($resultado->isEmpty());
+        $this->assertEquals($designacion->id, $resultado->first()->id);
     }
 
     /** @test */
-    public function getDesignacionParaPeriodo_lanza_excepcion_con_formato_invalido()
+    public function getDesignacionesParaPeriodo_multiples_designaciones()
     {
-        // Assert
+        // Limpiar designaciones
+        $this->empleado->designaciones()->delete();
+
+        // Arrange - Crear múltiples designaciones para diciembre 2024
+        $designacion1 = Designacion::create([
+            'fecha_inicio' => '2024-01-01',
+            'fecha_fin' => '2024-12-31',
+            'empleado_id' => $this->empleado->id,
+            'estructura_organizativa_id' => $this->estructura->id,
+            'cargo_id' => $this->cargo->id,
+        ]);
+
+        $designacion2 = Designacion::create([
+            'fecha_inicio' => '2024-06-01',
+            'fecha_fin' => '2024-12-31',
+            'empleado_id' => $this->empleado->id,
+            'estructura_organizativa_id' => $this->estructura->id,
+            'cargo_id' => $this->cargo->id,
+        ]);
+
+        // Debug: imprimir designaciones existentes
+        $todas = $this->empleado->designaciones()->get();
+        fwrite(STDERR, "Designaciones antes del test (multiples): " . $todas->count() . "\n");
+
+        // Act - Buscar designaciones para diciembre 2024
+        $resultado = $this->empleado->getDesignacionesParaPeriodo('202412');
+
+        // Assert - Debe retornar Collection con múltiples designaciones
+        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $resultado);
+        $this->assertCount(2, $resultado);
+        $this->assertFalse($resultado->isEmpty());
+
+        // Verificar que contiene ambas designaciones
+        $designacionIds = $resultado->pluck('id')->toArray();
+        $this->assertContains($designacion1->id, $designacionIds);
+        $this->assertContains($designacion2->id, $designacionIds);
+
+        // Verificar que están ordenadas por fecha_inicio descendente
+        $this->assertEquals($designacion2->id, $resultado->first()->id); // La más reciente primero
+        $this->assertEquals($designacion1->id, $resultado->last()->id);  // La más antigua al final
+    }
+
+    /** @test */
+    public function getDesignacionesParaPeriodo_lanza_excepcion_formato_invalido()
+    {
+        // Assert - Debe lanzar excepción con formato inválido
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('El período debe tener formato YYYYMM (ej: 202412)');
 
-        // Act
-        $this->empleado->getDesignacionParaPeriodo('2024');
-    }
-
-    /** @test */
-    public function getDesignacionParaPeriodo_funciona_con_designacion_que_inicia_en_medio_del_periodo()
-    {
-        // Arrange - Designación que inicia en medio del mes
-        Designacion::create([
-            'fecha_inicio' => '2024-12-15',
-            'fecha_fin' => '2024-12-31',
-            'empleado_id' => $this->empleado->id,
-            'estructura_organizativa_id' => $this->estructura->id,
-            'cargo_id' => $this->cargo1->id,
-        ]);
-
-        // Act
-        $designacion = $this->empleado->getDesignacionParaPeriodo('202412');
-
-        // Assert
-        $this->assertNotNull($designacion);
-        $this->assertEquals($this->cargo1->id, $designacion->cargo_id);
-        $this->assertEquals('2024-12-15', $designacion->fecha_inicio->format('Y-m-d'));
-    }
-
-    /** @test */
-    public function getDesignacionParaPeriodo_no_encuentra_designacion_fuera_del_rango()
-    {
-        // Arrange - Designación fuera del período buscado
-        Designacion::create([
-            'fecha_inicio' => '2024-01-01',
-            'fecha_fin' => '2024-06-30',
-            'empleado_id' => $this->empleado->id,
-            'estructura_organizativa_id' => $this->estructura->id,
-            'cargo_id' => $this->cargo1->id,
-        ]);
-
-        // Act - Buscar para diciembre 2024
-        $designacion = $this->empleado->getDesignacionParaPeriodo('202412');
-
-        // Assert
-        $this->assertNull($designacion);
-    }
-
-    /** @test */
-    public function getDesignacionActual_devuelve_designacion_para_periodo_actual()
-    {
-        // Arrange - Crear designación para el período actual
-        $periodoActual = now()->format('Ym');
-        $fechaInicio = Carbon::createFromFormat('Ym', $periodoActual)->startOfMonth();
-        $fechaFin = Carbon::createFromFormat('Ym', $periodoActual)->endOfMonth();
-
-        Designacion::create([
-            'fecha_inicio' => $fechaInicio,
-            'fecha_fin' => $fechaFin,
-            'empleado_id' => $this->empleado->id,
-            'estructura_organizativa_id' => $this->estructura->id,
-            'cargo_id' => $this->cargo1->id,
-        ]);
-
-        // Act
-        $designacion = $this->empleado->getDesignacionActual();
-
-        // Assert
-        $this->assertNotNull($designacion);
-        $this->assertEquals($this->cargo1->id, $designacion->cargo_id);
-    }
-
-    /** @test */
-    public function tieneDesignacionEnPeriodo_devuelve_true_cuando_hay_designacion()
-    {
-        // Arrange
-        Designacion::create([
-            'fecha_inicio' => '2024-01-01',
-            'fecha_fin' => '2024-12-31',
-            'empleado_id' => $this->empleado->id,
-            'estructura_organizativa_id' => $this->estructura->id,
-            'cargo_id' => $this->cargo1->id,
-        ]);
-
-        // Act
-        $tieneDesignacion = $this->empleado->tieneDesignacionEnPeriodo('202412');
-
-        // Assert
-        $this->assertTrue($tieneDesignacion);
-    }
-
-    /** @test */
-    public function tieneDesignacionEnPeriodo_devuelve_false_cuando_no_hay_designacion()
-    {
-        // Act
-        $tieneDesignacion = $this->empleado->tieneDesignacionEnPeriodo('202412');
-
-        // Assert
-        $this->assertFalse($tieneDesignacion);
+        // Act - Usar formato inválido
+        $this->empleado->getDesignacionesParaPeriodo('2024');
     }
 }

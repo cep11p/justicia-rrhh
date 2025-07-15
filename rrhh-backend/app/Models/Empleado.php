@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -61,66 +60,33 @@ class Empleado extends Model
     }
 
     /**
-     * Obtiene la designación vigente para un período específico
+     * Obtiene todas las designaciones para un período específico
+     * Retorna siempre una Collection:
+     * - Collection vacía si no hay designaciones
+     * - Collection con un elemento si hay una designación
+     * - Collection con múltiples elementos si hay múltiples designaciones
      */
-    public function getDesignacionParaPeriodo(string $periodo): ?Designacion
+    public function getDesignacionesParaPeriodo(string $periodo): \Illuminate\Database\Eloquent\Collection
     {
         // Validar formato del período
         if (!preg_match('/^\d{6}$/', $periodo)) {
             throw new \InvalidArgumentException('El período debe tener formato YYYYMM (ej: 202412)');
         }
 
-
         $fechaPeriodo = Carbon::createFromFormat('Ym', $periodo);
-        $fechaInicio = $fechaPeriodo->startOfMonth();
-        $fechaFin = $fechaPeriodo->endOfMonth();
+        $fechaInicio = $fechaPeriodo->copy()->startOfMonth();
+        $fechaFin = $fechaPeriodo->copy()->endOfMonth();
 
-        return $this->designaciones()
-            ->where('fecha_inicio', '<=', $fechaFin)
-            ->where(function ($query) use ($fechaInicio) {
-                $query->whereNull('fecha_fin')
-                      ->orWhere('fecha_fin', '>=', $fechaInicio);
-            })
-            ->orderBy('fecha_inicio', 'desc')
-            ->first();
-    }
-
-    /**
-
-     * Obtiene la designación actual del empleado
-     */
-    public function getDesignacionActual(): ?Designacion
-    {
-        $periodoActual = now()->format('Ym');
-        return $this->getDesignacionParaPeriodo($periodoActual);
-    }
-
-    /**
-     * Verifica si el empleado tiene designación en un período específico
-     */
-    public function tieneDesignacionEnPeriodo(string $periodo): bool
-    {
-        return $this->getDesignacionParaPeriodo($periodo) !== null;
-    }
-
-    /**
-     * Obtiene las designaciones en un rango de fechas
-     */
-    public function getDesignacionesEnRango(string $fechaInicio, string $fechaFin): \Illuminate\Database\Eloquent\Collection
-    {
         return $this->designaciones()
             ->where(function ($query) use ($fechaInicio, $fechaFin) {
-                $query->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
-                      ->orWhereBetween('fecha_fin', [$fechaInicio, $fechaFin])
-                      ->orWhere(function ($q) use ($fechaInicio, $fechaFin) {
-                          $q->where('fecha_inicio', '<=', $fechaInicio)
-                            ->where(function ($subQ) use ($fechaFin) {
-                                $subQ->whereNull('fecha_fin')
-                                     ->orWhere('fecha_fin', '>=', $fechaFin);
-                            });
+                $query->where('fecha_inicio', '<=', $fechaFin)
+                      ->where(function ($subQuery) use ($fechaInicio) {
+                          $subQuery->whereNull('fecha_fin')
+                                   ->orWhere('fecha_fin', '>=', $fechaInicio);
                       });
             })
-            ->orderBy('fecha_inicio')
+            ->with(['estructuraOrganizativa', 'cargo'])
+            ->orderBy('fecha_inicio', 'desc')
             ->get();
     }
 }
