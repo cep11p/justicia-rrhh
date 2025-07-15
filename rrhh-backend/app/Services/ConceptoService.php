@@ -13,25 +13,43 @@ use Illuminate\Support\Collection;
 class ConceptoService
 {
 
-    public function calcularBasico()
+    /**
+     * Calcula el salario básico para un empleado en un período específico.
+     *
+     * Este método obtiene todas las designaciones del empleado para el período
+     * y calcula el importe básico correspondiente a cada una, considerando
+     * los días trabajados y el valor del concepto de salario básico.
+     *
+     * @param Empleado $empleado El empleado para calcular el básico
+     * @param string $periodo Período en formato YYYYMM (ej: '202401' para enero 2024)
+     * @return array Array con los importes básicos calculados por designación
+     *
+     * @example
+     * $empleado = Empleado::find(1);
+     * $basicos = $conceptoService->calcularBasico($empleado, '202401');
+     * // Retorna: [
+     * //   [
+     * //     'estructura_organizacional' => 'Administración',
+     * //     'cargo' => 'Administrativo',
+     * //     'periodo_fecha_inicio' => Carbon('2024-01-01'),
+     * //     'periodo_fecha_fin' => Carbon('2024-01-31'),
+     * //     'importe' => 1000.00
+     * //   ]
+     * // ]
+     */
+    public function calcularBasico(Empleado $empleado, string $periodo): array
     {
-        // TODO: Implementar lógica de cálculo específica
+        // Obtener las designaciones del empleado para el período
+        $designaciones = $empleado->getDesignacionesParaPeriodo($periodo);
 
-        //vamos a crear un liquidacion_concepto con concepto basico
-        //por lo tanto buscamos el valor de ese concepto en valor_concepto
-        //instanciamos el cargo del empleado del periodo dado
-        //buscamos el valor del cargo instanciado
+        if ($designaciones->isEmpty()) {
+            return [];
+        }
 
-        //crear funcion en empleado que me
+        // Calcular los importes básicos para cada designación
+        $resultado = $empleado->calcularImporteDeDesignaciones($designaciones, $periodo);
 
-        //obtener valor del cargo de ese periodo, si por ejemplo el empleado empieza a mitad de mes,
-        //los dias son el porcentual trabajo en ese mes
+        return $resultado;
+    }
 
-        //obtener valor del cargo que tienen las designaciones de ese periodo para el empleado, tener en cuenta
-        //que si son mas de una designacion, el valor el porcentual es por los dias trabajado con ese cargo
-
-
-        //en el caso que tenga solo un cargo en ese periodo, devolver solo el valor de ese cargo
-
-        //si tiene mas de un cargo en ese periodo, devolver el valor por cargo
 }
