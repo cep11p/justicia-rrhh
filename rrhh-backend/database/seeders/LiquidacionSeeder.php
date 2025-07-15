@@ -17,7 +17,7 @@ class LiquidacionSeeder extends Seeder
             'numero' => 1,
             'periodo' => '202412',
             'fecha_liquidacion' => '2024-12-31',
-            'descripcion' => 'Liquidación de haberes diciembre 2024',
+            'observaciones' => 'Liquidación de haberes diciembre 2024',
         ]);
     }
 }

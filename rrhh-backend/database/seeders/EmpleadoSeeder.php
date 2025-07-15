@@ -88,7 +88,6 @@ class EmpleadoSeeder extends Seeder
                     'fecha_ingreso' => $empleado['fecha_ingreso'],
                     'legajo' => $empleado['legajo'],
                     'titulo' => $empleado['titulo'],
-                    'cargo_id' => $empleado['cargo_id'],
                 ]);
             }
         }
