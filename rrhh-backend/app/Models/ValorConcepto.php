@@ -17,12 +17,17 @@ class ValorConcepto extends Model
         'valor',
         'concepto_id',
         'cargo_id',
+        'fecha_inicio',
+        'fecha_fin',
     ];
 
     protected $casts = [
+        'periodo' => 'string',
         'valor' => 'decimal:2',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'concepto_id' => 'integer',
+        'cargo_id' => 'integer',
+        'fecha_inicio' => 'date',
+        'fecha_fin' => 'date',
     ];
 
     /**

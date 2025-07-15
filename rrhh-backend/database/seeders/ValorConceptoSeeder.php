@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Cargo;
-use App\Models\Concepto;
 use App\Models\ValorConcepto;
+use App\Models\Concepto;
+use App\Models\Cargo;
 use Illuminate\Database\Seeder;
 
 class ValorConceptoSeeder extends Seeder
@@ -14,114 +14,121 @@ class ValorConceptoSeeder extends Seeder
      */
     public function run(): void
     {
-        $valores = [
-            // Valores generales (sin cargo específico)
-            [
-                'concepto_codigo' => '001',
-                'cargo_nombre' => null,
-                'periodo' => '202412',
-                'valor' => 150000.00,
-            ],
-            [
-                'concepto_codigo' => '002',
-                'cargo_nombre' => null,
-                'periodo' => '202412',
-                'valor' => 50000.00,
-            ],
-            [
-                'concepto_codigo' => '003',
-                'cargo_nombre' => null,
-                'periodo' => '202412',
-                'valor' => 30000.00,
-            ],
-            [
-                'concepto_codigo' => '004',
-                'cargo_nombre' => null,
-                'periodo' => '202412',
-                'valor' => 15000.00,
-            ],
-            [
-                'concepto_codigo' => '005',
-                'cargo_nombre' => null,
-                'periodo' => '202412',
-                'valor' => 25000.00,
-            ],
-            [
-                'concepto_codigo' => '006',
-                'cargo_nombre' => null,
-                'periodo' => '202412',
-                'valor' => 20000.00,
-            ],
-            [
-                'concepto_codigo' => '007',
-                'cargo_nombre' => null,
-                'periodo' => '202412',
-                'valor' => 11.00, // Porcentaje
-            ],
-            [
-                'concepto_codigo' => '008',
-                'cargo_nombre' => null,
-                'periodo' => '202412',
-                'valor' => 3.00, // Porcentaje
-            ],
-            [
-                'concepto_codigo' => '009',
-                'cargo_nombre' => null,
-                'periodo' => '202412',
-                'valor' => 2.00, // Porcentaje
-            ],
-            [
-                'concepto_codigo' => '010',
-                'cargo_nombre' => null,
-                'periodo' => '202412',
-                'valor' => 35.00, // Porcentaje
-            ],
+        // Obtener conceptos
+        $conceptos = Concepto::all()->keyBy('codigo');
 
-            // Valores específicos por cargo
+        // Obtener cargos
+        $adminSenior = Cargo::where('nombre', 'Administrativo Senior')->first();
+        $adminAsistente = Cargo::where('nombre', 'Asistente Administrativo')->first();
+        $rrhhAnalista = Cargo::where('nombre', 'Analista de RRHH')->first();
+        $rrhhAsistente = Cargo::where('nombre', 'Asistente de RRHH')->first();
+
+        // Valores de conceptos remunerativos por cargo (BÁSICO)
+        $valoresBasico = [
+            // Administrativo Senior: $500,000
             [
-                'concepto_codigo' => '001',
-                'cargo_nombre' => 'Director General',
+                'concepto_id' => $conceptos['001']->id,
+                'cargo_id' => $adminSenior->id,
+                'valor' => 500000,
                 'periodo' => '202412',
-                'valor' => 300000.00,
+                'fecha_inicio' => '2024-01-01',
+                'fecha_fin' => null,
             ],
+            // Asistente Administrativo: $300,000
             [
-                'concepto_codigo' => '001',
-                'cargo_nombre' => 'Gerente de RRHH',
+                'concepto_id' => $conceptos['001']->id,
+                'cargo_id' => $adminAsistente->id,
+                'valor' => 300000,
                 'periodo' => '202412',
-                'valor' => 250000.00,
+                'fecha_inicio' => '2024-01-01',
+                'fecha_fin' => null,
             ],
+            // Analista de RRHH: $450,000
             [
-                'concepto_codigo' => '001',
-                'cargo_nombre' => 'Contador',
+                'concepto_id' => $conceptos['001']->id,
+                'cargo_id' => $rrhhAnalista->id,
+                'valor' => 450000,
                 'periodo' => '202412',
-                'valor' => 200000.00,
+                'fecha_inicio' => '2024-01-01',
+                'fecha_fin' => null,
             ],
+            // Asistente de RRHH: $280,000
             [
-                'concepto_codigo' => '001',
-                'cargo_nombre' => 'Desarrollador',
+                'concepto_id' => $conceptos['001']->id,
+                'cargo_id' => $rrhhAsistente->id,
+                'valor' => 280000,
                 'periodo' => '202412',
-                'valor' => 180000.00,
-            ],
-            [
-                'concepto_codigo' => '001',
-                'cargo_nombre' => 'Administrador de Sistemas',
-                'periodo' => '202412',
-                'valor' => 220000.00,
+                'fecha_inicio' => '2024-01-01',
+                'fecha_fin' => null,
             ],
         ];
 
-        foreach ($valores as $valor) {
-            $concepto = Concepto::where('codigo', $valor['concepto_codigo'])->first();
-            $cargo = $valor['cargo_nombre'] ? Cargo::where('nombre', $valor['cargo_nombre'])->first() : null;
+        // Valores de conceptos porcentuales (generales, no específicos de cargo)
+        $valoresPorcentuales = [
+            // ADICIONAL POR FUNCIÓN: 5% del básico
+            [
+                'concepto_id' => $conceptos['002']->id,
+                'cargo_id' => null,
+                'valor' => 5,
+                'periodo' => '202412',
+                'fecha_inicio' => '2024-01-01',
+                'fecha_fin' => null,
+            ],
+            // ADICIONAL POR TÍTULO: 10% del básico
+            [
+                'concepto_id' => $conceptos['003']->id,
+                'cargo_id' => null,
+                'valor' => 10,
+                'periodo' => '202412',
+                'fecha_inicio' => '2024-01-01',
+                'fecha_fin' => null,
+            ],
+            // ANTIGÜEDAD: 2% anual
+            [
+                'concepto_id' => $conceptos['004']->id,
+                'cargo_id' => null,
+                'valor' => 2,
+                'periodo' => '202412',
+                'fecha_inicio' => '2024-01-01',
+                'fecha_fin' => null,
+            ],
+            // ZONA: 40% de la suma
+            [
+                'concepto_id' => $conceptos['005']->id,
+                'cargo_id' => null,
+                'valor' => 40,
+                'periodo' => '202412',
+                'fecha_inicio' => '2024-01-01',
+                'fecha_fin' => null,
+            ],
+            // APORTE JUBILATORIO: 11% del total remunerativo
+            [
+                'concepto_id' => $conceptos['007']->id,
+                'cargo_id' => null,
+                'valor' => 11,
+                'periodo' => '202412',
+                'fecha_inicio' => '2024-01-01',
+                'fecha_fin' => null,
+            ],
+            // OBRA SOCIAL: 4% del total remunerativo
+            [
+                'concepto_id' => $conceptos['008']->id,
+                'cargo_id' => null,
+                'valor' => 4,
+                'periodo' => '202412',
+                'fecha_inicio' => '2024-01-01',
+                'fecha_fin' => null,
+            ],
+        ];
 
-            if ($concepto) {
-                ValorConcepto::create([
-                    'concepto_id' => $concepto->id,
-                    'cargo_id' => $cargo ? $cargo->id : null,
-                    'periodo' => $valor['periodo'],
-                    'valor' => $valor['valor'],
-                ]);
-            }
+        // Crear valores básicos por cargo
+        foreach ($valoresBasico as $valor) {
+            ValorConcepto::create($valor);
+        }
+
+        // Crear valores porcentuales generales
+        foreach ($valoresPorcentuales as $valor) {
+            ValorConcepto::create($valor);
         }
     }
 }

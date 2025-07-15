@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,18 +18,18 @@ class Empleado extends Model
     protected $fillable = [
         'persona_id',
         'fecha_ingreso',
+        'legajo',
         'titulo',
     ];
 
     protected $casts = [
         'fecha_ingreso' => 'date',
+        'legajo' => 'string',
         'titulo' => 'string',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     /**
-     * Obtiene la persona asociada a este empleado
+     * Obtiene la persona asociada al empleado
      */
     public function persona(): BelongsTo
     {
@@ -46,7 +47,7 @@ class Empleado extends Model
     /**
      * Obtiene las liquidaciones del empleado
      */
-    public function liquidacionEmpleados(): HasMany
+    public function liquidaciones(): HasMany
     {
         return $this->hasMany(LiquidacionEmpleado::class);
     }
@@ -60,16 +61,7 @@ class Empleado extends Model
     }
 
     /**
-     * Obtiene la designación vigente del empleado para un período específico (YYYYMM)
-     *
-     * Criterios de aceptación:
-     * - Devuelve la designación vigente que cubre TODO el período especificado
-     * - Si no hay designación que cubra todo el período, retorna null
-     * - Si hay varias históricas que encajan, devuelve la que tiene fecha_inicio más reciente
-     *
-     * @param string $periodo Formato YYYYMM (ej: '202412')
-     * @return Designacion|null La designación vigente o null si no existe
-     * @throws \InvalidArgumentException Si el formato del período es inválido
+     * Obtiene la designación vigente para un período específico
      */
     public function getDesignacionParaPeriodo(string $periodo): ?Designacion
     {
@@ -78,40 +70,33 @@ class Empleado extends Model
             throw new \InvalidArgumentException('El período debe tener formato YYYYMM (ej: 202412)');
         }
 
-        // Convertir período a fechas (inicio y fin del mes)
-        $fechaInicioPeriodo = Carbon::createFromFormat('Ym', $periodo)->startOfMonth();
-        $fechaFinPeriodo = Carbon::createFromFormat('Ym', $periodo)->endOfMonth();
 
-        // Buscar designación vigente para TODO el período
-        // Una designación está vigente si:
-        // - Comenzó ANTES o EN el inicio del período Y
-        // - No tiene fecha fin O la fecha fin es DESPUÉS del fin del período
+        $fechaPeriodo = Carbon::createFromFormat('Ym', $periodo);
+        $fechaInicio = $fechaPeriodo->startOfMonth();
+        $fechaFin = $fechaPeriodo->endOfMonth();
+
         return $this->designaciones()
-            ->where('fecha_inicio', '<=', $fechaInicioPeriodo)  // Comenzó antes o en el inicio del mes
-            ->where(function ($query) use ($fechaFinPeriodo) {
+            ->where('fecha_inicio', '<=', $fechaFin)
+            ->where(function ($query) use ($fechaInicio) {
                 $query->whereNull('fecha_fin')
-                      ->orWhere('fecha_fin', '>=', $fechaFinPeriodo);  // Termina después del fin del mes
+                      ->orWhere('fecha_fin', '>=', $fechaInicio);
             })
-            ->with(['estructuraOrganizativa', 'cargo'])
-            ->orderBy('fecha_inicio', 'desc')  // Más reciente primero
+            ->orderBy('fecha_inicio', 'desc')
             ->first();
     }
 
     /**
-     * Obtiene la designación vigente actual del empleado
-     *
-     * @return Designacion|null La designación vigente actual o null si no existe
+
+     * Obtiene la designación actual del empleado
      */
     public function getDesignacionActual(): ?Designacion
     {
-        return $this->getDesignacionParaPeriodo(now()->format('Ym'));
+        $periodoActual = now()->format('Ym');
+        return $this->getDesignacionParaPeriodo($periodoActual);
     }
 
     /**
-     * Verifica si el empleado tiene una designación vigente para un período
-     *
-     * @param string $periodo Formato YYYYMM (ej: '202412')
-     * @return bool True si tiene designación vigente, false en caso contrario
+     * Verifica si el empleado tiene designación en un período específico
      */
     public function tieneDesignacionEnPeriodo(string $periodo): bool
     {
@@ -119,48 +104,23 @@ class Empleado extends Model
     }
 
     /**
-     * Obtiene todas las designaciones de un empleado en un rango de períodos
-     *
-     * @param string $periodoInicio Formato YYYYMM (ej: '202401')
-     * @param string $periodoFin Formato YYYYMM (ej: '202412')
-     * @return \Illuminate\Database\Eloquent\Collection Colección de designaciones
+     * Obtiene las designaciones en un rango de fechas
      */
-    public function getDesignacionesEnRango(string $periodoInicio, string $periodoFin): \Illuminate\Database\Eloquent\Collection
+    public function getDesignacionesEnRango(string $fechaInicio, string $fechaFin): \Illuminate\Database\Eloquent\Collection
     {
-        // Validar formato de los períodos
-        if (!preg_match('/^\d{6}$/', $periodoInicio) || !preg_match('/^\d{6}$/', $periodoFin)) {
-            throw new \InvalidArgumentException('Los períodos deben tener formato YYYYMM (ej: 202412)');
-        }
-
-        // Convertir períodos a fechas
-        $fechaInicio = Carbon::createFromFormat('Ym', $periodoInicio)->startOfMonth();
-        $fechaFin = Carbon::createFromFormat('Ym', $periodoFin)->endOfMonth();
-
-        // Buscar designaciones que se superpongan con el rango
         return $this->designaciones()
             ->where(function ($query) use ($fechaInicio, $fechaFin) {
-                $query->where(function ($q) use ($fechaInicio, $fechaFin) {
-                    // Designación que inicia antes del rango y termina después del inicio del rango
-                    $q->where('fecha_inicio', '<=', $fechaInicio)
-                      ->where(function ($subQ) use ($fechaInicio) {
-                          $subQ->whereNull('fecha_fin')
-                               ->orWhere('fecha_fin', '>=', $fechaInicio);
+                $query->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
+                      ->orWhereBetween('fecha_fin', [$fechaInicio, $fechaFin])
+                      ->orWhere(function ($q) use ($fechaInicio, $fechaFin) {
+                          $q->where('fecha_inicio', '<=', $fechaInicio)
+                            ->where(function ($subQ) use ($fechaFin) {
+                                $subQ->whereNull('fecha_fin')
+                                     ->orWhere('fecha_fin', '>=', $fechaFin);
+                            });
                       });
-                })->orWhere(function ($q) use ($fechaInicio, $fechaFin) {
-                    // Designación que inicia dentro del rango
-                    $q->where('fecha_inicio', '>=', $fechaInicio)
-                      ->where('fecha_inicio', '<=', $fechaFin);
-                });
             })
-            ->with(['estructuraOrganizativa', 'cargo'])
-            ->orderBy('fecha_inicio', 'asc')
+            ->orderBy('fecha_inicio')
             ->get();
-    }
-
-    // Método adicional para casos especiales
-    public function getDesignacionEspecialParaPeriodo(string $periodo): ?Designacion
-    {
-        // Lógica para casos de ingresos/ascensos a mitad de mes
-        // Solo para casos excepcionales
     }
 }
