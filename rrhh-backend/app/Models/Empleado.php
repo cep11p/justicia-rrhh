@@ -83,17 +83,15 @@ class Empleado extends Model
         $fechaFinPeriodo = Carbon::createFromFormat('Ym', $periodo)->endOfMonth();
 
         // Buscar designación vigente para TODO el período
-        // Una designación está vigente si:
-        // - Comenzó ANTES o EN el inicio del período Y
-        // - No tiene fecha fin O la fecha fin es DESPUÉS del fin del período
+        // Comparar solo la fecha (sin hora)
         return $this->designaciones()
-            ->where('fecha_inicio', '<=', $fechaInicioPeriodo)  // Comenzó antes o en el inicio del mes
+            ->whereDate('fecha_inicio', '<=', $fechaInicioPeriodo->toDateString())
             ->where(function ($query) use ($fechaFinPeriodo) {
                 $query->whereNull('fecha_fin')
-                      ->orWhere('fecha_fin', '>=', $fechaFinPeriodo);  // Termina después del fin del mes
+                      ->orWhereDate('fecha_fin', '>=', $fechaFinPeriodo->toDateString());
             })
             ->with(['estructuraOrganizativa', 'cargo'])
-            ->orderBy('fecha_inicio', 'desc')  // Más reciente primero
+            ->orderBy('fecha_inicio', 'desc')
             ->first();
     }
 
@@ -162,5 +160,6 @@ class Empleado extends Model
     {
         // Lógica para casos de ingresos/ascensos a mitad de mes
         // Solo para casos excepcionales
+        return null; // Por ahora retorna null, implementar lógica específica cuando sea necesario
     }
 }
