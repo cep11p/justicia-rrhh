@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Concepto;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -11,84 +10,124 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class ConceptoFactory extends Factory
 {
     /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
-    protected $model = Concepto::class;
-
-    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
-        $conceptos = [
-            ['codigo' => '001', 'descripcion' => 'Sueldo Básico', 'tipo' => 'fijo', 'es_remunerativo' => true],
-            ['codigo' => '002', 'descripcion' => 'Adicional por Función', 'tipo' => 'fijo', 'es_remunerativo' => true],
-            ['codigo' => '003', 'descripcion' => 'Adicional por Título', 'tipo' => 'fijo', 'es_remunerativo' => true],
-            ['codigo' => '004', 'descripcion' => 'Presentismo', 'tipo' => 'fijo', 'es_remunerativo' => true],
-            ['codigo' => '005', 'descripcion' => 'Horas Extras', 'tipo' => 'fijo', 'es_remunerativo' => true],
-            ['codigo' => '006', 'descripcion' => 'Bonificación por Rendimiento', 'tipo' => 'fijo', 'es_remunerativo' => true],
-            ['codigo' => '007', 'descripcion' => 'Jubilación', 'tipo' => 'porcentual', 'es_remunerativo' => false],
-            ['codigo' => '008', 'descripcion' => 'Obra Social', 'tipo' => 'porcentual', 'es_remunerativo' => false],
-            ['codigo' => '009', 'descripcion' => 'Sindicato', 'tipo' => 'porcentual', 'es_remunerativo' => false],
-            ['codigo' => '010', 'descripcion' => 'Ganancia', 'tipo' => 'porcentual', 'es_remunerativo' => false],
-            ['codigo' => '011', 'descripcion' => 'Antigüedad', 'tipo' => 'fijo', 'es_remunerativo' => true],
-            ['codigo' => '012', 'descripcion' => 'Zona Desfavorable', 'tipo' => 'fijo', 'es_remunerativo' => true],
-            ['codigo' => '013', 'descripcion' => 'Riesgo de Trabajo', 'tipo' => 'fijo', 'es_remunerativo' => true],
-            ['codigo' => '014', 'descripcion' => 'Fondo de Desempleo', 'tipo' => 'porcentual', 'es_remunerativo' => false],
-            ['codigo' => '015', 'descripcion' => 'INSSJP', 'tipo' => 'porcentual', 'es_remunerativo' => false],
+        $conceptosRemunerativos = [
+            'BÁSICO' => 'Sueldo básico del empleado',
+            'ADICIONAL POR FUNCIÓN' => 'Adicional por función específica',
+            'ADICIONAL POR TÍTULO' => 'Adicional por título académico',
+            'ANTIGÜEDAD' => 'Adicional por años de servicio',
+            'ZONA' => 'Adicional por zona geográfica',
+            'PRESENTISMO' => 'Adicional por asistencia perfecta',
+            'HORAS EXTRAS' => 'Compensación por horas trabajadas extra',
+            'BONIFICACIÓN' => 'Bonificación por rendimiento',
+            'COMISIÓN' => 'Comisión por ventas o resultados',
+            'PREMIO' => 'Premio por objetivos cumplidos'
         ];
 
-        $concepto = $this->faker->unique()->randomElement($conceptos);
+        $conceptosDescuentos = [
+            'APORTE JUBILATORIO' => 'Aporte jubilatorio obligatorio',
+            'OBRA SOCIAL' => 'Aporte a obra social',
+            'SINDICATO' => 'Aporte sindical',
+            'GANANCIA' => 'Impuesto a las ganancias',
+            'SEGURO' => 'Seguro de vida obligatorio',
+            'PRÉSTAMO' => 'Descuento por préstamo',
+            'ADELANTO' => 'Descuento por adelanto de sueldo',
+            'FALTAS' => 'Descuento por inasistencias',
+            'SANCIONES' => 'Descuento por sanciones disciplinarias',
+            'OTROS' => 'Otros descuentos varios'
+        ];
+
+        $esRemunerativo = $this->faker->boolean(70); // 70% de probabilidad de ser remunerativo
+
+        if ($esRemunerativo) {
+            $concepto = $this->faker->unique()->randomElement(array_keys($conceptosRemunerativos));
+            $descripcion = $conceptosRemunerativos[$concepto];
+            $tipo = 'Remunerativo';
+        } else {
+            $concepto = $this->faker->unique()->randomElement(array_keys($conceptosDescuentos));
+            $descripcion = $conceptosDescuentos[$concepto];
+            $tipo = 'Descuento';
+        }
 
         return [
-            'codigo' => $concepto['codigo'],
-            'descripcion' => $concepto['descripcion'],
-            'tipo' => $concepto['tipo'],
-            'es_remunerativo' => $concepto['es_remunerativo'],
+            'codigo' => $this->faker->unique()->numerify('###'),
+            'nombre' => $concepto,
+            'descripcion' => $descripcion,
+            'tipo' => $tipo,
+            'tipo_valor' => $this->faker->randomElement(['fijo', 'porcentual']),
         ];
     }
 
     /**
-     * Indicate that the concept is fixed type.
-     */
-    public function fijo(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'tipo' => 'fijo',
-        ]);
-    }
-
-    /**
-     * Indicate that the concept is percentage type.
-     */
-    public function porcentual(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'tipo' => 'porcentual',
-        ]);
-    }
-
-    /**
-     * Indicate that the concept is remunerative.
+     * Indica que es un concepto remunerativo
      */
     public function remunerativo(): static
     {
         return $this->state(fn (array $attributes) => [
-            'es_remunerativo' => true,
+            'tipo' => 'Remunerativo',
         ]);
     }
 
     /**
-     * Indicate that the concept is not remunerative.
+     * Indica que es un concepto de descuento
      */
-    public function noRemunerativo(): static
+    public function descuento(): static
     {
         return $this->state(fn (array $attributes) => [
-            'es_remunerativo' => false,
+            'tipo' => 'Descuento',
+        ]);
+    }
+
+    /**
+     * Indica que es un valor fijo
+     */
+    public function valorFijo(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tipo_valor' => 'fijo',
+        ]);
+    }
+
+    /**
+     * Indica que es un valor porcentual
+     */
+    public function valorPorcentual(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tipo_valor' => 'porcentual',
+        ]);
+    }
+
+    /**
+     * Concepto básico remunerativo
+     */
+    public function basico(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'codigo' => '001',
+            'nombre' => 'BÁSICO',
+            'descripcion' => 'Sueldo básico del empleado',
+            'tipo' => 'Remunerativo',
+            'tipo_valor' => 'fijo',
+        ]);
+    }
+
+    /**
+     * Concepto de descuento jubilatorio
+     */
+    public function jubilacion(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'codigo' => '007',
+            'nombre' => 'APORTE JUBILATORIO',
+            'descripcion' => 'Aporte jubilatorio obligatorio',
+            'tipo' => 'Descuento',
+            'tipo_valor' => 'porcentual',
         ]);
     }
 }

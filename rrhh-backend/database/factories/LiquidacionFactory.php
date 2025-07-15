@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Liquidacion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -11,89 +10,76 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class LiquidacionFactory extends Factory
 {
     /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
-    protected $model = Liquidacion::class;
-
-    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
-        $year = $this->faker->numberBetween(2020, 2024);
-        $month = $this->faker->numberBetween(1, 12);
-        $periodo = sprintf('%04d%02d', $year, $month);
-        $numero = sprintf('LIQ-%04d-%03d', $year, $this->faker->unique()->numberBetween(1, 999));
+        $periodo = $this->faker->numerify('2024##');
+        $fechaLiquidacion = \Carbon\Carbon::createFromFormat('Ym', $periodo)->endOfMonth();
 
         return [
-            'numero' => $numero,
+            'numero' => $this->faker->unique()->numberBetween(1, 999),
             'periodo' => $periodo,
+            'fecha_liquidacion' => $fechaLiquidacion,
+            'descripcion' => $this->faker->sentence(6),
         ];
     }
 
     /**
-     * Indicate that the liquidation is for the current year.
-     */
-    public function añoActual(): static
-    {
-        $year = now()->year;
-        $month = $this->faker->numberBetween(1, 12);
-        $periodo = sprintf('%04d%02d', $year, $month);
-        $numero = sprintf('LIQ-%04d-%03d', $year, $this->faker->unique()->numberBetween(1, 999));
-
-        return $this->state(fn (array $attributes) => [
-            'numero' => $numero,
-            'periodo' => $periodo,
-        ]);
-    }
-
-    /**
-     * Indicate that the liquidation is for a specific year.
-     */
-    public function paraAño(int $year): static
-    {
-        $month = $this->faker->numberBetween(1, 12);
-        $periodo = sprintf('%04d%02d', $year, $month);
-        $numero = sprintf('LIQ-%04d-%03d', $year, $this->faker->unique()->numberBetween(1, 999));
-
-        return $this->state(fn (array $attributes) => [
-            'numero' => $numero,
-            'periodo' => $periodo,
-        ]);
-    }
-
-    /**
-     * Indicate that the liquidation is for a specific period.
+     * Liquidación para un período específico
      */
     public function paraPeriodo(string $periodo): static
     {
-        $year = substr($periodo, 0, 4);
-        $numero = sprintf('LIQ-%04d-%03d', $year, $this->faker->unique()->numberBetween(1, 999));
+        $fechaLiquidacion = \Carbon\Carbon::createFromFormat('Ym', $periodo)->endOfMonth();
 
         return $this->state(fn (array $attributes) => [
-            'numero' => $numero,
             'periodo' => $periodo,
+            'fecha_liquidacion' => $fechaLiquidacion,
+            'descripcion' => "Liquidación de haberes período {$periodo}",
         ]);
     }
 
     /**
-     * Indicate that the liquidation is recent (last 6 months).
+     * Liquidación del período actual
      */
-    public function reciente(): static
+    public function periodoActual(): static
     {
-        $date = $this->faker->dateTimeBetween('-6 months', 'now');
-        $year = $date->format('Y');
-        $month = $date->format('m');
-        $periodo = $date->format('Ym');
-        $numero = sprintf('LIQ-%04d-%03d', $year, $this->faker->unique()->numberBetween(1, 999));
+        $periodo = now()->format('Ym');
+        $fechaLiquidacion = now()->endOfMonth();
 
         return $this->state(fn (array $attributes) => [
-            'numero' => $numero,
             'periodo' => $periodo,
+            'fecha_liquidacion' => $fechaLiquidacion,
+            'descripcion' => "Liquidación de haberes período {$periodo}",
+        ]);
+    }
+
+    /**
+     * Liquidación de diciembre
+     */
+    public function diciembre(): static
+    {
+        $anio = $this->faker->numberBetween(2020, 2024);
+        $periodo = "{$anio}12";
+        $fechaLiquidacion = \Carbon\Carbon::createFromFormat('Ym', $periodo)->endOfMonth();
+
+        return $this->state(fn (array $attributes) => [
+            'numero' => $this->faker->unique()->numberBetween(1, 999),
+            'periodo' => $periodo,
+            'fecha_liquidacion' => $fechaLiquidacion,
+            'descripcion' => "Liquidación de haberes diciembre {$anio}",
+        ]);
+    }
+
+    /**
+     * Liquidación con número específico
+     */
+    public function conNumero(int $numero): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'numero' => $numero,
         ]);
     }
 }

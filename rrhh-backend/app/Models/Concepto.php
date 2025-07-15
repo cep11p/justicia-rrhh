@@ -14,15 +14,18 @@ class Concepto extends Model
 
     protected $fillable = [
         'codigo',
+        'nombre',
         'descripcion',
         'tipo',
-        'es_remunerativo',
+        'tipo_valor',
     ];
 
     protected $casts = [
-        'es_remunerativo' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'codigo' => 'string',
+        'nombre' => 'string',
+        'descripcion' => 'string',
+        'tipo' => 'string',
+        'tipo_valor' => 'string',
     ];
 
     /**
@@ -40,4 +43,37 @@ class Concepto extends Model
     {
         return $this->hasMany(LiquidacionConcepto::class);
     }
+
+    /**
+     * Verifica si el concepto es remunerativo
+     */
+    public function isRemunerativo(): bool
+    {
+        return $this->tipo === 'Remunerativo';
+    }
+
+    /**
+     * Verifica si el concepto es descuento
+     */
+    public function isDescuento(): bool
+    {
+        return $this->tipo === 'Descuento';
+    }
+
+    /**
+     * Verifica si el concepto es de valor fijo
+     */
+    public function isValorFijo(): bool
+    {
+        return $this->tipo_valor === 'fijo';
+    }
+
+    /**
+     * Verifica si el concepto es de valor porcentual
+     */
+    public function isValorPorcentual(): bool
+    {
+        return $this->tipo_valor === 'porcentual';
+    }
+
 }
