@@ -13,65 +13,57 @@ class ConceptoSeeder extends Seeder
     public function run(): void
     {
         $conceptos = [
+            // Conceptos Remunerativos
             [
                 'codigo' => '001',
-                'descripcion' => 'Sueldo Básico',
-                'tipo' => 'fijo',
-                'es_remunerativo' => true,
+                'nombre' => 'BÁSICO',
+                'descripcion' => 'Sueldo básico del empleado',
+                'tipo' => 'Remunerativo',
+                'tipo_valor' => 'fijo',
             ],
             [
                 'codigo' => '002',
-                'descripcion' => 'Adicional por Función',
-                'tipo' => 'fijo',
-                'es_remunerativo' => true,
+                'nombre' => 'ADICIONAL POR FUNCIÓN',
+                'descripcion' => 'Adicional por función específica (5% del básico)',
+                'tipo' => 'Remunerativo',
+                'tipo_valor' => 'porcentual',
             ],
             [
                 'codigo' => '003',
-                'descripcion' => 'Adicional por Título',
-                'tipo' => 'fijo',
-                'es_remunerativo' => true,
+                'nombre' => 'ADICIONAL POR TÍTULO',
+                'descripcion' => 'Adicional por título académico (10% del básico)',
+                'tipo' => 'Remunerativo',
+                'tipo_valor' => 'porcentual',
             ],
             [
                 'codigo' => '004',
-                'descripcion' => 'Presentismo',
-                'tipo' => 'fijo',
-                'es_remunerativo' => true,
+                'nombre' => 'ANTIGÜEDAD',
+                'descripcion' => 'Adicional por años de servicio (2% anual)',
+                'tipo' => 'Remunerativo',
+                'tipo_valor' => 'porcentual',
             ],
             [
                 'codigo' => '005',
-                'descripcion' => 'Horas Extras',
-                'tipo' => 'fijo',
-                'es_remunerativo' => true,
+                'nombre' => 'ZONA',
+                'descripcion' => 'Adicional por zona geográfica (40% de la suma)',
+                'tipo' => 'Remunerativo',
+                'tipo_valor' => 'porcentual',
             ],
-            [
-                'codigo' => '006',
-                'descripcion' => 'Bonificación por Rendimiento',
-                'tipo' => 'fijo',
-                'es_remunerativo' => true,
-            ],
+
+            // Conceptos de Descuento
             [
                 'codigo' => '007',
-                'descripcion' => 'Jubilación',
-                'tipo' => 'porcentual',
-                'es_remunerativo' => false,
+                'nombre' => 'APORTE JUBILATORIO',
+                'descripcion' => 'Aporte jubilatorio (11% del total remunerativo)',
+                'tipo' => 'Descuento',
+                'tipo_valor' => 'porcentual',
             ],
             [
                 'codigo' => '008',
-                'descripcion' => 'Obra Social',
-                'tipo' => 'porcentual',
-                'es_remunerativo' => false,
-            ],
-            [
-                'codigo' => '009',
-                'descripcion' => 'Sindicato',
-                'tipo' => 'porcentual',
-                'es_remunerativo' => false,
-            ],
-            [
-                'codigo' => '010',
-                'descripcion' => 'Ganancia',
-                'tipo' => 'porcentual',
-                'es_remunerativo' => false,
+                'nombre' => 'OBRA SOCIAL',
+                'descripcion' => 'Aporte a obra social (4% del total remunerativo)',
+                'tipo' => 'Descuento',
+                'tipo_valor' => 'porcentual',
             ],
         ];
 

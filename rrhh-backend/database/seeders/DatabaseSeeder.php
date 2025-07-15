@@ -11,8 +11,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Ejecutar seeders en orden de dependencias
         $this->call([
-            // Seeders en orden de dependencias
             PersonaSeeder::class,
             EstructuraOrganizativaSeeder::class,
             CargoSeeder::class,

@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\EstructuraOrganizativa;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -11,84 +10,60 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class EstructuraOrganizativaFactory extends Factory
 {
     /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
-    protected $model = EstructuraOrganizativa::class;
-
-    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
-        $estructuras = [
-            'Administración' => 'Departamento encargado de la gestión administrativa y procesos internos.',
-            'Recursos Humanos' => 'Departamento responsable de la gestión del personal y desarrollo organizacional.',
-            'Finanzas' => 'Departamento encargado de la gestión financiera y contable.',
-            'Operaciones' => 'Departamento responsable de las operaciones diarias y servicios.',
-            'Tecnología' => 'Departamento de sistemas informáticos y soporte técnico.',
-            'Comercial' => 'Departamento de ventas y atención al cliente.',
-            'Logística' => 'Departamento de gestión de inventarios y distribución.',
-            'Mantenimiento' => 'Departamento de mantenimiento de instalaciones y equipos.',
+        $nombres = [
+            'Dirección General', 'Recursos Humanos', 'Finanzas', 'Tecnología',
+            'Operaciones', 'Marketing', 'Ventas', 'Administración',
+            'Contabilidad', 'Sistemas', 'Mantenimiento', 'Seguridad',
+            'Logística', 'Calidad', 'Investigación y Desarrollo'
         ];
 
-        $estructura = $this->faker->unique()->randomElement(array_keys($estructuras));
-        $descripcion = $estructuras[$estructura];
+        $descripciones = [
+            'Departamento responsable de la gestión estratégica y toma de decisiones ejecutivas',
+            'Área encargada de la gestión del capital humano y desarrollo organizacional',
+            'Departamento de gestión financiera, contabilidad y control de costos',
+            'Área de tecnología de la información y sistemas informáticos',
+            'Departamento de operaciones diarias y servicios de apoyo',
+            'Área de promoción y comunicación de productos y servicios',
+            'Departamento de ventas y atención al cliente',
+            'Área de gestión administrativa y coordinación de procesos',
+            'Departamento de contabilidad general y reportes financieros',
+            'Área de desarrollo de software y infraestructura tecnológica',
+            'Departamento de mantenimiento de instalaciones y equipos',
+            'Área de seguridad física y control de acceso',
+            'Departamento de gestión de inventarios y distribución',
+            'Área de control de calidad y mejora continua',
+            'Departamento de investigación, desarrollo e innovación'
+        ];
 
         return [
-            'nombre' => $estructura,
-            'descripcion' => $descripcion,
-            'padre_id' => null, // Estructuras simples sin jerarquía
+            'nombre' => $this->faker->randomElement($nombres),
+            'descripcion' => $this->faker->randomElement($descripciones),
+            'padre_id' => null, // Por defecto sin padre, se puede modificar en tests
         ];
     }
 
     /**
-     * Indica que es una estructura administrativa
+     * Indica que la estructura es hija de otra
      */
-    public function administrativa(): static
+    public function hijaDe($padreId): static
     {
         return $this->state(fn (array $attributes) => [
-            'nombre' => 'Administración',
-            'descripcion' => 'Departamento encargado de la gestión administrativa, procesos internos y control de gestión.',
-            'padre_id' => null,
+            'padre_id' => $padreId,
         ]);
     }
 
     /**
-     * Indica que es una estructura de recursos humanos
+     * Indica que la estructura es raíz (sin padre)
      */
-    public function recursosHumanos(): static
+    public function raiz(): static
     {
         return $this->state(fn (array $attributes) => [
-            'nombre' => 'Recursos Humanos',
-            'descripcion' => 'Departamento responsable de la gestión del personal, selección, capacitación y desarrollo organizacional.',
-            'padre_id' => null,
-        ]);
-    }
-
-    /**
-     * Indica que es una estructura financiera
-     */
-    public function finanzas(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'nombre' => 'Finanzas',
-            'descripcion' => 'Departamento encargado de la gestión financiera, contabilidad, presupuestos y control de costos.',
-            'padre_id' => null,
-        ]);
-    }
-
-    /**
-     * Indica que es una estructura operacional
-     */
-    public function operaciones(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'nombre' => 'Operaciones',
-            'descripcion' => 'Departamento responsable de las operaciones diarias, logística y servicios de apoyo.',
             'padre_id' => null,
         ]);
     }

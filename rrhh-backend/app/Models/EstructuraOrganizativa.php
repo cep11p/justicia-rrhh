@@ -20,11 +20,13 @@ class EstructuraOrganizativa extends Model
     ];
 
     protected $casts = [
+        'nombre' => 'string',
+        'descripcion' => 'string',
         'padre_id' => 'integer',
     ];
 
     /**
-     * Obtiene la estructura padre de esta estructura
+     * Obtiene la estructura padre
      */
     public function padre(): BelongsTo
     {
@@ -32,7 +34,7 @@ class EstructuraOrganizativa extends Model
     }
 
     /**
-     * Obtiene las estructuras hijas de esta estructura
+     * Obtiene las estructuras hijas
      */
     public function hijos(): HasMany
     {
@@ -40,66 +42,11 @@ class EstructuraOrganizativa extends Model
     }
 
     /**
-     * Obtiene todas las estructuras hijas recursivamente
+     * Obtiene las designaciones en esta estructura
      */
-    public function todosLosHijos(): HasMany
+    public function designaciones(): HasMany
     {
-        return $this->hijos()->with('todosLosHijos');
+        return $this->hasMany(Designacion::class);
     }
 
-    /**
-     * Obtiene todas las estructuras padre recursivamente
-     */
-    public function todosLosPadres(): BelongsTo
-    {
-        return $this->padre()->with('todosLosPadres');
-    }
-
-    /**
-     * Verifica si es una estructura raíz (sin padre)
-     */
-    public function esRaiz(): bool
-    {
-        return is_null($this->padre_id);
-    }
-
-    /**
-     * Verifica si es una estructura hoja (sin hijos)
-     */
-    public function esHoja(): bool
-    {
-        return $this->hijos()->count() === 0;
-    }
-
-    /**
-     * Obtiene el nivel de profundidad en la jerarquía
-     */
-    public function getNivelAttribute(): int
-    {
-        $nivel = 0;
-        $estructura = $this;
-
-        while ($estructura->padre) {
-            $nivel++;
-            $estructura = $estructura->padre;
-        }
-
-        return $nivel;
-    }
-
-    /**
-     * Obtiene la ruta completa desde la raíz
-     */
-    public function getRutaCompletaAttribute(): string
-    {
-        $ruta = [$this->nombre];
-        $estructura = $this;
-
-        while ($estructura->padre) {
-            $estructura = $estructura->padre;
-            array_unshift($ruta, $estructura->nombre);
-        }
-
-        return implode(' > ', $ruta);
-    }
 }

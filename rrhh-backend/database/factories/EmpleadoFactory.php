@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Empleado;
 use App\Models\Persona;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -12,58 +11,24 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class EmpleadoFactory extends Factory
 {
     /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
-    protected $model = Empleado::class;
-
-    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
+        $titulos = ['universitario', 'terciario', 'secundario', 'sin_titulo'];
+
         return [
             'persona_id' => Persona::factory(),
-            'fecha_ingreso' => $this->faker->dateTimeBetween('-5 years', 'now'),
-            'titulo' => $this->faker->randomElement(['sin_titulo', 'secundario', 'terciario', 'universitario']),
+            'fecha_ingreso' => $this->faker->dateTimeBetween('-10 years', '-1 month'),
+            'legajo' => $this->faker->unique()->numerify('L####'),
+            'titulo' => $this->faker->randomElement($titulos),
         ];
     }
 
     /**
-     * Indicate that the employee has no title.
-     */
-    public function sinTitulo(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'titulo' => 'sin_titulo',
-        ]);
-    }
-
-    /**
-     * Indicate that the employee has secondary education.
-     */
-    public function secundario(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'titulo' => 'secundario',
-        ]);
-    }
-
-    /**
-     * Indicate that the employee has tertiary education.
-     */
-    public function terciario(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'titulo' => 'terciario',
-        ]);
-    }
-
-    /**
-     * Indicate that the employee has university education.
+     * Indica que el empleado tiene título universitario
      */
     public function universitario(): static
     {
@@ -73,9 +38,49 @@ class EmpleadoFactory extends Factory
     }
 
     /**
-     * Indicate that the employee is recent (last year).
+     * Indica que el empleado tiene título terciario
      */
-    public function reciente(): static
+    public function terciario(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'titulo' => 'terciario',
+        ]);
+    }
+
+    /**
+     * Indica que el empleado tiene título secundario
+     */
+    public function secundario(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'titulo' => 'secundario',
+        ]);
+    }
+
+    /**
+     * Indica que el empleado no tiene título
+     */
+    public function sinTitulo(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'titulo' => 'sin_titulo',
+        ]);
+    }
+
+    /**
+     * Empleado con antigüedad alta (más de 5 años)
+     */
+    public function conAntiguedad(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'fecha_ingreso' => $this->faker->dateTimeBetween('-10 years', '-5 years'),
+        ]);
+    }
+
+    /**
+     * Empleado recién ingresado (menos de 1 año)
+     */
+    public function recienIngresado(): static
     {
         return $this->state(fn (array $attributes) => [
             'fecha_ingreso' => $this->faker->dateTimeBetween('-1 year', 'now'),
@@ -83,12 +88,12 @@ class EmpleadoFactory extends Factory
     }
 
     /**
-     * Indicate that the employee is experienced (more than 3 years).
+     * Empleado con persona específica
      */
-    public function experimentado(): static
+    public function conPersona(Persona $persona): static
     {
         return $this->state(fn (array $attributes) => [
-            'fecha_ingreso' => $this->faker->dateTimeBetween('-10 years', '-3 years'),
+            'persona_id' => $persona->id,
         ]);
     }
 }
