@@ -12,23 +12,12 @@ class LiquidacionSeeder extends Seeder
      */
     public function run(): void
     {
-        $liquidaciones = [
-            [
-                'numero' => 'LIQ-2024-001',
-                'periodo' => '202412',
-            ],
-            [
-                'numero' => 'LIQ-2024-002',
-                'periodo' => '202411',
-            ],
-            [
-                'numero' => 'LIQ-2024-003',
-                'periodo' => '202410',
-            ],
-        ];
-
-        foreach ($liquidaciones as $liquidacion) {
-            Liquidacion::create($liquidacion);
-        }
+        // Crear liquidación para diciembre 2024
+        Liquidacion::create([
+            'numero' => 1,
+            'periodo' => '202412',
+            'fecha_liquidacion' => '2024-12-31',
+            'descripcion' => 'Liquidación de haberes diciembre 2024',
+        ]);
     }
 }

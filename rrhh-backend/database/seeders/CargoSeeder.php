@@ -12,55 +12,30 @@ class CargoSeeder extends Seeder
      */
     public function run(): void
     {
-        $cargos = [
-            [
-                'nombre' => 'Director General',
-                'tiene_funcion' => true,
-            ],
-            [
-                'nombre' => 'Gerente de RRHH',
-                'tiene_funcion' => true,
-            ],
-            [
-                'nombre' => 'Analista de RRHH',
-                'tiene_funcion' => false,
-            ],
-            [
-                'nombre' => 'Contador',
-                'tiene_funcion' => false,
-            ],
-            [
-                'nombre' => 'Analista Contable',
-                'tiene_funcion' => false,
-            ],
-            [
-                'nombre' => 'Desarrollador',
-                'tiene_funcion' => false,
-            ],
-            [
-                'nombre' => 'Administrador de Sistemas',
-                'tiene_funcion' => true,
-            ],
-            [
-                'nombre' => 'Administrativo',
-                'tiene_funcion' => false,
-            ],
-            [
-                'nombre' => 'Técnico de Mantenimiento',
-                'tiene_funcion' => false,
-            ],
-            [
-                'nombre' => 'Oficial de Seguridad',
-                'tiene_funcion' => false,
-            ],
-            [
-                'nombre' => 'Personal de Limpieza',
-                'tiene_funcion' => false,
-            ],
-        ];
+        // Cargos para Administración
+        Cargo::create([
+            'nombre' => 'Administrativo Senior',
+            'descripcion' => 'Responsable de la gestión administrativa avanzada y coordinación de procesos internos',
+            'tiene_funcion' => true,
+        ]);
 
-        foreach ($cargos as $cargo) {
-            Cargo::create($cargo);
-        }
+        Cargo::create([
+            'nombre' => 'Asistente Administrativo',
+            'descripcion' => 'Apoyo en tareas administrativas y gestión de documentación',
+            'tiene_funcion' => false,
+        ]);
+
+        // Cargos para Recursos Humanos
+        Cargo::create([
+            'nombre' => 'Analista de RRHH',
+            'descripcion' => 'Responsable de la gestión del personal, selección y desarrollo organizacional',
+            'tiene_funcion' => true,
+        ]);
+
+        Cargo::create([
+            'nombre' => 'Asistente de RRHH',
+            'descripcion' => 'Apoyo en tareas de recursos humanos y gestión de personal',
+            'tiene_funcion' => false,
+        ]);
     }
 }
