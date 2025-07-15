@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Empleado;
 use App\Models\Persona;
+use App\Models\Cargo;
 use Illuminate\Database\Seeder;
 
 class EmpleadoSeeder extends Seeder
@@ -20,6 +21,7 @@ class EmpleadoSeeder extends Seeder
                 'fecha_ingreso' => '2020-01-15',
                 'legajo' => 'L001',
                 'titulo' => 'universitario',
+                'cargo_id' => $administrativoSenior->id,
             ],
             [
                 'cuil' => '20234567890',
@@ -52,6 +54,7 @@ class EmpleadoSeeder extends Seeder
                 'fecha_ingreso' => '2018-06-15',
                 'legajo' => 'L006',
                 'titulo' => 'universitario',
+                'cargo_id' => $analistaRRHH->id,
             ],
             [
                 'cuil' => '20789012345',
@@ -81,13 +84,13 @@ class EmpleadoSeeder extends Seeder
 
         foreach ($empleados as $empleado) {
             $persona = Persona::where('cuil', $empleado['cuil'])->first();
-
             if ($persona) {
                 Empleado::create([
                     'persona_id' => $persona->id,
                     'fecha_ingreso' => $empleado['fecha_ingreso'],
                     'legajo' => $empleado['legajo'],
                     'titulo' => $empleado['titulo'],
+                    'cargo_id' => $empleado['cargo_id'],
                 ]);
             }
         }

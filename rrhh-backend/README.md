@@ -64,3 +64,54 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## **Estructura para la Presentación:**
+
+### **2 Estructuras Organizacionales:**
+1. **Administración** - Gestión administrativa y procesos internos
+2. **Recursos Humanos** - Gestión del personal y desarrollo organizacional
+
+### **4 Cargos (2 por estructura):**
+- **Administración:**
+  - Administrativo Senior (con función)
+  - Asistente Administrativo (sin función)
+
+- **Recursos Humanos:**
+  - Analista de RRHH (con función)
+  - Asistente de RRHH (sin función)
+
+### **10 Empleados Distribuidos:**
+- **Administración (5 empleados):**
+  - 2 Administrativos Senior
+  - 3 Asistentes Administrativos
+
+- **Recursos Humanos (5 empleados):**
+  - 2 Analistas de RRHH
+  - 3 Asistentes de RRHH
+
+### **Comandos para Probar:**
+
+```bash
+# Ejecutar todo el ciclo
+docker compose exec app php artisan migrate:fresh --seed
+
+# Verificar la estructura
+docker compose exec app php artisan tinker --execute="
+echo 'ESTRUCTURAS ORGANIZACIONALES:' . PHP_EOL;
+App\Models\EstructuraOrganizativa::all()->each(function(\$e) {
+    echo '- ' . \$e->nombre . ' (ID: ' . \$e->id . ')' . PHP_EOL;
+});
+
+echo PHP_EOL . 'CARGOS:' . PHP_EOL;
+App\Models\Cargo::with('estructuraOrganizativa')->get()->each(function(\$c) {
+    echo '- ' . \$c->nombre . ' -> ' . \$c->estructuraOrganizativa->nombre . ' (ID: ' . \$c->id . ')' . PHP_EOL;
+});
+
+echo PHP_EOL . 'EMPLEADOS:' . PHP_EOL;
+App\Models\Empleado::with(['persona', 'cargo.estructuraOrganizativa'])->get()->each(function(\$e) {
+    echo '- ' . \$e->persona->nombre . ' ' . \$e->persona->apellido . ' -> ' . \$e->cargo->nombre . ' (' . \$e->cargo->estructuraOrganizativa->nombre . ')' . PHP_EOL;
+});
+"
+```
+
+¿Quieres que ejecute estos comandos para verificar que todo está funcionando correctamente?

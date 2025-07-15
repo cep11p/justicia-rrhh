@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Cargo;
+use App\Models\EstructuraOrganizativa;
 use Illuminate\Database\Seeder;
 
 class CargoSeeder extends Seeder
