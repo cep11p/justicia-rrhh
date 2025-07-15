@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
+use App\Models\Designacion;
 use App\Models\Empleado;
 use App\Models\Cargo;
 use App\Models\EstructuraOrganizativa;
@@ -11,11 +12,11 @@ use App\Models\ValorConcepto;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class EmpleadoTest extends TestCase
+class DesignacionTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_calcular_importe_de_designaciones()
+    public function test_get_importe_designacion_calcula_correctamente()
     {
         // Crear datos de prueba
         $empleado = Empleado::factory()->create();
@@ -42,28 +43,26 @@ class EmpleadoTest extends TestCase
         ]);
 
         // Crear designación que cubre todo el mes
-        $designacion = $empleado->designaciones()->create([
+        $designacion = Designacion::create([
             'fecha_inicio' => '2024-01-01',
             'fecha_fin' => null,
+            'empleado_id' => $empleado->id,
             'estructura_organizativa_id' => $estructura->id,
             'cargo_id' => $cargo->id
         ]);
 
-        // Calcular importes de designaciones
-        $resultado = $empleado->calcularImporteDeDesignaciones([$designacion], '202401');
+        // Fechas del período (enero 2024)
+        $periodoInicio = Carbon::create(2024, 1, 1);
+        $periodoFin = Carbon::create(2024, 1, 31);
 
-        // Verificar que el resultado es correcto
-        $this->assertCount(1, $resultado);
-        $this->assertEquals($estructura->nombre, $resultado[0]['estructura_organizacional']);
-        $this->assertEquals($cargo->nombre, $resultado[0]['cargo']);
-        $this->assertEquals(1000.00, $resultado[0]['importe']);
+        // Calcular importe
+        $importe = $designacion->getImporteDesginacion($periodoInicio, $periodoFin);
 
-        // Verificar que las fechas son correctas
-        $this->assertEquals('2024-01-01', $resultado[0]['periodo_fecha_inicio']->format('Y-m-d'));
-        $this->assertEquals('2024-01-31', $resultado[0]['periodo_fecha_fin']->format('Y-m-d'));
+        // Verificar que el importe es correcto (100% del mes = 1000.00)
+        $this->assertEquals(1000.00, $importe);
     }
 
-    public function test_calcular_importe_de_designaciones_parcial()
+    public function test_get_importe_designacion_calcula_parcial_correctamente()
     {
         // Crear datos de prueba
         $empleado = Empleado::factory()->create();
@@ -89,31 +88,54 @@ class EmpleadoTest extends TestCase
             'fecha_fin' => null
         ]);
 
-        // Crear designación que empieza a mitad del mes
-        $designacion = $empleado->designaciones()->create([
+        // Crear designación que empieza a mitad del mes (15 de enero)
+        $designacion = Designacion::create([
             'fecha_inicio' => '2024-01-15',
             'fecha_fin' => null,
+            'empleado_id' => $empleado->id,
             'estructura_organizativa_id' => $estructura->id,
             'cargo_id' => $cargo->id
         ]);
 
-        // Calcular importes de designaciones
-        $resultado = $empleado->calcularImporteDeDesignaciones([$designacion], '202401');
+        // Fechas del período (enero 2024)
+        $periodoInicio = Carbon::create(2024, 1, 1);
+        $periodoFin = Carbon::create(2024, 1, 31);
 
-        // Verificar que el resultado es correcto
-        $this->assertCount(1, $resultado);
-        $this->assertEquals($estructura->nombre, $resultado[0]['estructura_organizacional']);
-        $this->assertEquals($cargo->nombre, $resultado[0]['cargo']);
+        // Calcular importe
+        $importe = $designacion->getImporteDesginacion($periodoInicio, $periodoFin);
 
-        // Verificar que el importe es proporcional (del 15 al 31)
-        $diasTrabajados = $resultado[0]['periodo_fecha_inicio']->diffInDays($resultado[0]['periodo_fecha_fin']) + 1;
-        $diasTotales = $resultado[0]['periodo_fecha_inicio']->copy()->startOfMonth()->diffInDays($resultado[0]['periodo_fecha_inicio']->copy()->endOfMonth()) + 1;
+        // Verificar que el importe es correcto (17 días de 31 = 54.84% aprox)
+        $diasTrabajados = 17; // del 15 al 31
+        $diasTotales = 31;
         $importeEsperado = 1000.00 * ($diasTrabajados / $diasTotales);
 
-        $this->assertEquals(round($importeEsperado, 2), round($resultado[0]['importe'], 2));
+        $this->assertEquals(round($importeEsperado, 2), round($importe, 2));
+    }
 
-        // Verificar que las fechas son correctas
-        $this->assertEquals('2024-01-15', $resultado[0]['periodo_fecha_inicio']->format('Y-m-d'));
-        $this->assertEquals('2024-01-31', $resultado[0]['periodo_fecha_fin']->format('Y-m-d'));
+    public function test_get_importe_designacion_retorna_cero_sin_concepto()
+    {
+        // Crear datos de prueba
+        $empleado = Empleado::factory()->create();
+        $cargo = Cargo::factory()->create();
+        $estructura = EstructuraOrganizativa::factory()->create();
+
+        // Crear designación sin concepto de salario básico
+        $designacion = Designacion::create([
+            'fecha_inicio' => '2024-01-01',
+            'fecha_fin' => null,
+            'empleado_id' => $empleado->id,
+            'estructura_organizativa_id' => $estructura->id,
+            'cargo_id' => $cargo->id
+        ]);
+
+        // Fechas del período
+        $periodoInicio = Carbon::create(2024, 1, 1);
+        $periodoFin = Carbon::create(2024, 1, 31);
+
+        // Calcular importe
+        $importe = $designacion->getImporteDesginacion($periodoInicio, $periodoFin);
+
+        // Verificar que retorna 0 cuando no hay concepto
+        $this->assertEquals(0, $importe);
     }
 }
