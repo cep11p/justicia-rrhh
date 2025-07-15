@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('cargos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
+            $table->text('descripcion')->nullable();
             $table->boolean('tiene_funcion')->default(false);
             $table->timestamps();
         });
