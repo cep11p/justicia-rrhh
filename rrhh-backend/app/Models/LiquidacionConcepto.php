@@ -20,8 +20,8 @@ class LiquidacionConcepto extends Model
 
     protected $casts = [
         'importe' => 'decimal:2',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'liquidacion_empleado_id' => 'integer',
+        'concepto_id' => 'integer',
     ];
 
     /**
@@ -33,10 +33,26 @@ class LiquidacionConcepto extends Model
     }
 
     /**
-     * Obtiene el concepto de esta liquidación
+     * Obtiene el concepto de este registro
      */
     public function concepto(): BelongsTo
     {
         return $this->belongsTo(Concepto::class);
+    }
+
+    /**
+     * Obtiene la liquidación a través de liquidacionEmpleado
+     */
+    public function liquidacion()
+    {
+        return $this->liquidacionEmpleado->liquidacion();
+    }
+
+    /**
+     * Obtiene el empleado a través de liquidacionEmpleado
+     */
+    public function empleado()
+    {
+        return $this->liquidacionEmpleado->empleado();
     }
 }

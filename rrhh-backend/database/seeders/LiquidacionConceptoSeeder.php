@@ -2,9 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\Concepto;
 use App\Models\LiquidacionConcepto;
 use App\Models\LiquidacionEmpleado;
+use App\Models\Concepto;
+use App\Models\ValorConcepto;
+use App\Models\Empleado;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 class LiquidacionConceptoSeeder extends Seeder
@@ -14,135 +17,173 @@ class LiquidacionConceptoSeeder extends Seeder
      */
     public function run(): void
     {
-        $liquidacionConceptos = [
-            // Liquidación 1 - Empleado 1 (Director General)
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20123456789',
-                'concepto_codigo' => '001',
-                'importe' => 300000.00,
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20123456789',
-                'concepto_codigo' => '002',
-                'importe' => 50000.00,
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20123456789',
-                'concepto_codigo' => '003',
-                'importe' => 30000.00,
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20123456789',
-                'concepto_codigo' => '004',
-                'importe' => 15000.00,
-            ],
+        $periodo = '202412';
+        $liquidacionEmpleados = LiquidacionEmpleado::with(['empleado.persona', 'empleado.designaciones.cargo'])->get();
 
-            // Liquidación 1 - Empleado 2 (Gerente RRHH)
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20234567890',
-                'concepto_codigo' => '001',
-                'importe' => 250000.00,
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20234567890',
-                'concepto_codigo' => '002',
-                'importe' => 50000.00,
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20234567890',
-                'concepto_codigo' => '003',
-                'importe' => 30000.00,
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20234567890',
-                'concepto_codigo' => '004',
-                'importe' => 15000.00,
-            ],
+        foreach ($liquidacionEmpleados as $liquidacionEmpleado) {
+            $empleado = $liquidacionEmpleado->empleado;
+            $designaciones = $empleado->getDesignacionesParaPeriodo($periodo);
 
-            // Liquidación 1 - Empleado 3 (Analista RRHH)
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20345678901',
-                'concepto_codigo' => '001',
-                'importe' => 150000.00,
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20345678901',
-                'concepto_codigo' => '003',
-                'importe' => 30000.00,
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20345678901',
-                'concepto_codigo' => '004',
-                'importe' => 15000.00,
-            ],
+            if ($designaciones->isEmpty()) {
+                continue;
+            }
 
-            // Liquidación 2 - Empleado 1
-            [
-                'liquidacion_numero' => 'LIQ-2024-002',
-                'empleado_cuil' => '20123456789',
-                'concepto_codigo' => '001',
-                'importe' => 300000.00,
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-002',
-                'empleado_cuil' => '20123456789',
-                'concepto_codigo' => '002',
-                'importe' => 50000.00,
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-002',
-                'empleado_cuil' => '20123456789',
-                'concepto_codigo' => '004',
-                'importe' => 15000.00,
-            ],
+            // Usar la primera designación (más reciente)
+            $designacion = $designaciones->first();
+            $cargo = $designacion->cargo;
+            $fechaIngreso = Carbon::parse($empleado->fecha_ingreso);
+            $fechaPeriodo = Carbon::createFromFormat('Ym', $periodo);
+            $aniosAntiguedad = $fechaIngreso->diffInYears($fechaPeriodo);
 
-            // Liquidación 2 - Empleado 2
-            [
-                'liquidacion_numero' => 'LIQ-2024-002',
-                'empleado_cuil' => '20234567890',
-                'concepto_codigo' => '001',
-                'importe' => 250000.00,
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-002',
-                'empleado_cuil' => '20234567890',
-                'concepto_codigo' => '002',
-                'importe' => 50000.00,
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-002',
-                'empleado_cuil' => '20234567890',
-                'concepto_codigo' => '004',
-                'importe' => 15000.00,
-            ],
-        ];
+            // Obtener conceptos
+            $conceptos = Concepto::all()->keyBy('codigo');
 
-        foreach ($liquidacionConceptos as $liquidacionConcepto) {
-            $liquidacionEmpleado = LiquidacionEmpleado::whereHas('liquidacion', function ($query) use ($liquidacionConcepto) {
-                $query->where('numero', $liquidacionConcepto['liquidacion_numero']);
-            })->whereHas('empleado.persona', function ($query) use ($liquidacionConcepto) {
-                $query->where('cuil', $liquidacionConcepto['empleado_cuil']);
-            })->first();
+            // Calcular BÁSICO
+            $valorBasico = ValorConcepto::where('concepto_id', $conceptos['001']->id)
+                ->where('cargo_id', $cargo->id)
+                ->where('periodo', $periodo)
+                ->first();
 
-            $concepto = Concepto::where('codigo', $liquidacionConcepto['concepto_codigo'])->first();
+            if ($valorBasico) {
+                $basico = $valorBasico->valor;
 
-            if ($liquidacionEmpleado && $concepto) {
+                // Crear concepto BÁSICO
                 LiquidacionConcepto::create([
                     'liquidacion_empleado_id' => $liquidacionEmpleado->id,
-                    'concepto_id' => $concepto->id,
-                    'importe' => $liquidacionConcepto['importe'],
+                    'concepto_id' => $conceptos['001']->id,
+                    'importe' => $basico,
                 ]);
+
+                // Calcular ADICIONAL POR FUNCIÓN (5% del básico si tiene función)
+                if ($cargo->tiene_funcion) {
+                    $valorFuncion = ValorConcepto::where('concepto_id', $conceptos['002']->id)
+                        ->where('periodo', $periodo)
+                        ->first();
+
+                    if ($valorFuncion) {
+                        $adicionalFuncion = $basico * ($valorFuncion->valor / 100);
+
+                        LiquidacionConcepto::create([
+                            'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+                            'concepto_id' => $conceptos['002']->id,
+                            'importe' => $adicionalFuncion,
+                        ]);
+                    }
+                }
+
+                // Calcular ADICIONAL POR TÍTULO (10% del básico si tiene título universitario)
+                if ($empleado->titulo === 'universitario') {
+                    $valorTitulo = ValorConcepto::where('concepto_id', $conceptos['003']->id)
+                        ->where('periodo', $periodo)
+                        ->first();
+
+                    if ($valorTitulo) {
+                        $adicionalTitulo = $basico * ($valorTitulo->valor / 100);
+
+                        LiquidacionConcepto::create([
+                            'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+                            'concepto_id' => $conceptos['003']->id,
+                            'importe' => $adicionalTitulo,
+                        ]);
+                    }
+                }
+
+                // Calcular ANTIGÜEDAD (2% anual)
+                $valorAntiguedad = ValorConcepto::where('concepto_id', $conceptos['004']->id)
+                    ->where('periodo', $periodo)
+                    ->first();
+
+                if ($valorAntiguedad) {
+                    $sumaBasico = $basico;
+                    if ($cargo->tiene_funcion) {
+                        $sumaBasico += $basico * 0.05; // Adicional por función
+                    }
+                    if ($empleado->titulo === 'universitario') {
+                        $sumaBasico += $basico * 0.10; // Adicional por título
+                    }
+
+                    $adicionalAntiguedad = $sumaBasico * ($valorAntiguedad->valor / 100) * $aniosAntiguedad;
+
+                    LiquidacionConcepto::create([
+                        'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+                        'concepto_id' => $conceptos['004']->id,
+                        'importe' => $adicionalAntiguedad,
+                    ]);
+                }
+
+                // Calcular ZONA (40% de la suma)
+                $valorZona = ValorConcepto::where('concepto_id', $conceptos['005']->id)
+                    ->where('periodo', $periodo)
+                    ->first();
+
+                if ($valorZona) {
+                    $sumaParaZona = $basico;
+                    if ($cargo->tiene_funcion) {
+                        $sumaParaZona += $basico * 0.05;
+                    }
+                    if ($empleado->titulo === 'universitario') {
+                        $sumaParaZona += $basico * 0.10;
+                    }
+                    if ($valorAntiguedad) {
+                        $sumaParaZona += $sumaParaZona * ($valorAntiguedad->valor / 100) * $aniosAntiguedad;
+                    }
+
+                    $adicionalZona = $sumaParaZona * ($valorZona->valor / 100);
+
+                    LiquidacionConcepto::create([
+                        'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+                        'concepto_id' => $conceptos['005']->id,
+                        'importe' => $adicionalZona,
+                    ]);
+                }
+
+                // Calcular descuentos
+                $totalRemunerativo = $basico;
+                if ($cargo->tiene_funcion) {
+                    $totalRemunerativo += $basico * 0.05;
+                }
+                if ($empleado->titulo === 'universitario') {
+                    $totalRemunerativo += $basico * 0.10;
+                }
+                if ($valorAntiguedad) {
+                    $totalRemunerativo += $sumaBasico * ($valorAntiguedad->valor / 100) * $aniosAntiguedad;
+                }
+                if ($valorZona) {
+                    $totalRemunerativo += $sumaParaZona * ($valorZona->valor / 100);
+                }
+
+                // APORTE JUBILATORIO (11%)
+                $valorJubilacion = ValorConcepto::where('concepto_id', $conceptos['007']->id)
+                    ->where('periodo', $periodo)
+                    ->first();
+
+                if ($valorJubilacion) {
+                    $descuentoJubilacion = $totalRemunerativo * ($valorJubilacion->valor / 100);
+
+                    LiquidacionConcepto::create([
+                        'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+                        'concepto_id' => $conceptos['007']->id,
+                        'importe' => $descuentoJubilacion,
+                    ]);
+                }
+
+                // OBRA SOCIAL (4%)
+                $valorObraSocial = ValorConcepto::where('concepto_id', $conceptos['008']->id)
+                    ->where('periodo', $periodo)
+                    ->first();
+
+                if ($valorObraSocial) {
+                    $descuentoObraSocial = $totalRemunerativo * ($valorObraSocial->valor / 100);
+
+                    LiquidacionConcepto::create([
+                        'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+                        'concepto_id' => $conceptos['008']->id,
+                        'importe' => $descuentoObraSocial,
+                    ]);
+                }
+
+                // Nota: Los totales se calcularán en el servicio de liquidación
+                // ya que la tabla liquidacion_empleados no tiene esos campos
             }
         }
     }

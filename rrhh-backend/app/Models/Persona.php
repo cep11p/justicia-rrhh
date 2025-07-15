@@ -19,8 +19,9 @@ class Persona extends Model
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'cuil' => 'string',
+        'apellido' => 'string',
+        'nombre' => 'string',
     ];
 
     /**
@@ -36,6 +37,6 @@ class Persona extends Model
      */
     public function getNombreCompletoAttribute(): string
     {
-        return "{$this->apellido}, {$this->nombre}";
+        return $this->apellido . ', ' . $this->nombre;
     }
 }

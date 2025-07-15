@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Empleado;
-use App\Models\Liquidacion;
 use App\Models\LiquidacionEmpleado;
+use App\Models\Liquidacion;
+use App\Models\Empleado;
 use Illuminate\Database\Seeder;
 
 class LiquidacionEmpleadoSeeder extends Seeder
@@ -14,56 +14,20 @@ class LiquidacionEmpleadoSeeder extends Seeder
      */
     public function run(): void
     {
-        $liquidacionEmpleados = [
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20123456789',
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20234567890',
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20345678901',
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20456789012',
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-001',
-                'empleado_cuil' => '20567890123',
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-002',
-                'empleado_cuil' => '20123456789',
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-002',
-                'empleado_cuil' => '20234567890',
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-002',
-                'empleado_cuil' => '20345678901',
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-003',
-                'empleado_cuil' => '20123456789',
-            ],
-            [
-                'liquidacion_numero' => 'LIQ-2024-003',
-                'empleado_cuil' => '20234567890',
-            ],
-        ];
+        $liquidacion = Liquidacion::where('periodo', '202412')->first();
 
-        foreach ($liquidacionEmpleados as $liquidacionEmpleado) {
-            $liquidacion = Liquidacion::where('numero', $liquidacionEmpleado['liquidacion_numero'])->first();
-            $empleado = Empleado::whereHas('persona', function ($query) use ($liquidacionEmpleado) {
-                $query->where('cuil', $liquidacionEmpleado['empleado_cuil']);
-            })->first();
+        if (!$liquidacion) {
+            return;
+        }
 
-            if ($liquidacion && $empleado) {
+        // Obtener todos los empleados
+        $empleados = Empleado::all();
+
+        foreach ($empleados as $empleado) {
+            // Verificar que el empleado tenga designación en el período
+            if ($empleado->getDesignacionesParaPeriodo('202412')->isNotEmpty()) {
+                // Crear liquidación de empleado con valores iniciales
+                // Los totales se calcularán después con los conceptos
                 LiquidacionEmpleado::create([
                     'liquidacion_id' => $liquidacion->id,
                     'empleado_id' => $empleado->id,

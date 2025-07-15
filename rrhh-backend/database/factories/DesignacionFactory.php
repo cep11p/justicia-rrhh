@@ -2,10 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Cargo;
-use App\Models\Designacion;
 use App\Models\Empleado;
 use App\Models\EstructuraOrganizativa;
+use App\Models\Cargo;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -14,13 +13,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class DesignacionFactory extends Factory
 {
     /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
-    protected $model = Designacion::class;
-
-    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
@@ -28,18 +20,18 @@ class DesignacionFactory extends Factory
     public function definition(): array
     {
         return [
+            'fecha_inicio' => $this->faker->dateTimeBetween('-2 years', '-1 month'),
+            'fecha_fin' => $this->faker->optional(0.2)->dateTimeBetween('-1 month', 'now'), // 20% de probabilidad de tener fecha fin
             'empleado_id' => Empleado::factory(),
             'estructura_organizativa_id' => EstructuraOrganizativa::factory(),
             'cargo_id' => Cargo::factory(),
-            'fecha_inicio' => $this->faker->dateTimeBetween('-3 years', 'now'),
-            'fecha_fin' => $this->faker->optional(0.2)->dateTimeBetween('now', '+2 years'), // 20% de probabilidad de tener fecha fin
         ];
     }
 
     /**
-     * Indicate that the designation is active (no end date).
+     * Indica que la designación está vigente (sin fecha fin)
      */
-    public function activa(): static
+    public function vigente(): static
     {
         return $this->state(fn (array $attributes) => [
             'fecha_fin' => null,
@@ -47,33 +39,67 @@ class DesignacionFactory extends Factory
     }
 
     /**
-     * Indicate that the designation is inactive (has end date).
+     * Indica que la designación ha finalizado
      */
-    public function inactiva(): static
+    public function finalizada(): static
     {
         return $this->state(fn (array $attributes) => [
-            'fecha_fin' => $this->faker->dateTimeBetween('-1 year', 'now'),
+            'fecha_inicio' => $this->faker->dateTimeBetween('-2 years', '-6 months'),
+            'fecha_fin' => $this->faker->dateTimeBetween('-6 months', '-1 month'),
         ]);
     }
 
     /**
-     * Indicate that the designation is recent (started in the last year).
+     * Designación reciente (últimos 3 meses)
      */
     public function reciente(): static
     {
         return $this->state(fn (array $attributes) => [
-            'fecha_inicio' => $this->faker->dateTimeBetween('-1 year', 'now'),
+            'fecha_inicio' => $this->faker->dateTimeBetween('-3 months', 'now'),
             'fecha_fin' => null,
         ]);
     }
 
     /**
-     * Indicate that the designation is long-term (started more than 2 years ago).
+     * Designación con empleado específico
      */
-    public function largaDuracion(): static
+    public function conEmpleado(Empleado $empleado): static
     {
         return $this->state(fn (array $attributes) => [
-            'fecha_inicio' => $this->faker->dateTimeBetween('-5 years', '-2 years'),
+            'empleado_id' => $empleado->id,
+        ]);
+    }
+
+    /**
+     * Designación con estructura específica
+     */
+    public function conEstructura(EstructuraOrganizativa $estructura): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'estructura_organizativa_id' => $estructura->id,
+        ]);
+    }
+
+    /**
+     * Designación con cargo específico
+     */
+    public function conCargo(Cargo $cargo): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'cargo_id' => $cargo->id,
+        ]);
+    }
+
+    /**
+     * Designación para un período específico
+     */
+    public function paraPeriodo(string $periodo): static
+    {
+        $fechaPeriodo = \Carbon\Carbon::createFromFormat('Ym', $periodo);
+        $fechaInicio = $fechaPeriodo->startOfMonth();
+
+        return $this->state(fn (array $attributes) => [
+            'fecha_inicio' => $fechaInicio->subMonths(rand(1, 12)),
             'fecha_fin' => null,
         ]);
     }

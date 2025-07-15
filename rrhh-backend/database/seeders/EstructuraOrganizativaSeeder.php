@@ -12,16 +12,17 @@ class EstructuraOrganizativaSeeder extends Seeder
      */
     public function run(): void
     {
-        // Crear exactamente 2 estructuras organizacionales para la presentación
-        EstructuraOrganizativa::create([
+        // Estructura 1: Administración
+        $administracion = EstructuraOrganizativa::create([
             'nombre' => 'Administración',
-            'descripcion' => 'Departamento encargado de la gestión administrativa, procesos internos y control de gestión.',
+            'descripcion' => 'Departamento de administración y finanzas',
             'padre_id' => null,
         ]);
 
-        EstructuraOrganizativa::create([
+        // Estructura 2: Recursos Humanos
+        $recursosHumanos = EstructuraOrganizativa::create([
             'nombre' => 'Recursos Humanos',
-            'descripcion' => 'Departamento responsable de la gestión del personal, selección, capacitación y desarrollo organizacional.',
+            'descripcion' => 'Departamento de recursos humanos y gestión del personal',
             'padre_id' => null,
         ]);
     }

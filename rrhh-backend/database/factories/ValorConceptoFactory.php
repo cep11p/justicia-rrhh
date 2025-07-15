@@ -2,9 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Cargo;
 use App\Models\Concepto;
-use App\Models\ValorConcepto;
+use App\Models\Cargo;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -12,13 +11,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ValorConceptoFactory extends Factory
 {
-    /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
-    protected $model = ValorConcepto::class;
-
     /**
      * Define the model's default state.
      *
@@ -29,23 +21,25 @@ class ValorConceptoFactory extends Factory
         return [
             'concepto_id' => Concepto::factory(),
             'cargo_id' => $this->faker->optional(0.3)->randomElement([Cargo::factory(), null]), // 30% de probabilidad de tener cargo específico
-            'periodo' => $this->faker->dateTimeBetween('-2 years', 'now')->format('Ym'),
-            'valor' => $this->faker->randomFloat(2, 1000, 500000),
+            'valor' => $this->faker->randomFloat(2, 1000, 1000000),
+            'periodo' => $this->faker->numerify('2024##'),
+            'fecha_inicio' => $this->faker->dateTimeBetween('-1 year', '-1 month'),
+            'fecha_fin' => $this->faker->optional(0.1)->dateTimeBetween('-1 month', 'now'), // 10% de probabilidad de tener fecha fin
         ];
     }
 
     /**
-     * Indicate that the value is for a specific position.
+     * Indica que es un valor específico para un cargo
      */
-    public function paraCargo(): static
+    public function paraCargo(Cargo $cargo): static
     {
         return $this->state(fn (array $attributes) => [
-            'cargo_id' => Cargo::factory(),
+            'cargo_id' => $cargo->id,
         ]);
     }
 
     /**
-     * Indicate that the value is general (no specific position).
+     * Indica que es un valor general (sin cargo específico)
      */
     public function general(): static
     {
@@ -55,52 +49,67 @@ class ValorConceptoFactory extends Factory
     }
 
     /**
-     * Indicate that the value is for the current period.
+     * Valor vigente (sin fecha fin)
      */
-    public function periodoActual(): static
+    public function vigente(): static
     {
         return $this->state(fn (array $attributes) => [
-            'periodo' => now()->format('Ym'),
+            'fecha_fin' => null,
         ]);
     }
 
     /**
-     * Indicate that the value is for a specific period.
+     * Valor para un período específico
      */
     public function paraPeriodo(string $periodo): static
     {
+        $fechaPeriodo = \Carbon\Carbon::createFromFormat('Ym', $periodo);
+        $fechaInicio = $fechaPeriodo->startOfMonth();
+
         return $this->state(fn (array $attributes) => [
             'periodo' => $periodo,
+            'fecha_inicio' => $fechaInicio,
+            'fecha_fin' => null,
         ]);
     }
 
     /**
-     * Indicate that the value is high (for senior positions).
+     * Valor básico remunerativo (alto)
      */
-    public function valorAlto(): static
+    public function basico(): static
     {
         return $this->state(fn (array $attributes) => [
-            'valor' => $this->faker->randomFloat(2, 200000, 500000),
+            'valor' => $this->faker->randomFloat(2, 200000, 800000),
         ]);
     }
 
     /**
-     * Indicate that the value is low (for junior positions).
-     */
-    public function valorBajo(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'valor' => $this->faker->randomFloat(2, 1000, 100000),
-        ]);
-    }
-
-    /**
-     * Indicate that the value is a percentage (for percentage concepts).
+     * Valor porcentual (bajo)
      */
     public function porcentual(): static
     {
         return $this->state(fn (array $attributes) => [
             'valor' => $this->faker->randomFloat(2, 1, 50),
+        ]);
+    }
+
+    /**
+     * Valor de descuento (negativo)
+     */
+    public function descuento(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'valor' => $this->faker->randomFloat(2, 5, 20),
+        ]);
+    }
+
+    /**
+     * Valor con concepto específico
+     */
+    public function conConcepto(Concepto $concepto): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'concepto_id' => $concepto->id,
         ]);
     }
 }
