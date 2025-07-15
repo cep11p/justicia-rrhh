@@ -21,7 +21,6 @@ class EmpleadoSeeder extends Seeder
                 'fecha_ingreso' => '2020-01-15',
                 'legajo' => 'L001',
                 'titulo' => 'universitario',
-                'cargo_id' => $administrativoSenior->id,
             ],
             [
                 'cuil' => '20234567890',
@@ -54,7 +53,6 @@ class EmpleadoSeeder extends Seeder
                 'fecha_ingreso' => '2018-06-15',
                 'legajo' => 'L006',
                 'titulo' => 'universitario',
-                'cargo_id' => $analistaRRHH->id,
             ],
             [
                 'cuil' => '20789012345',
