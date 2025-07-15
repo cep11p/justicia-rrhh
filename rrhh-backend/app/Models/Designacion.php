@@ -223,10 +223,9 @@ class Designacion extends Model
             return 0;
         }
 
-        // Calcular los días trabajados en el período
-        // Usar directamente las fechas ajustadas que ya vienen como parámetros
-        $diasTrabajados = $periodo_fecha_inicio->diffInDays($periodo_fecha_fin) + 1;
-        $diasTotalesMes = $periodo_fecha_inicio->copy()->startOfMonth()->diffInDays($periodo_fecha_inicio->copy()->endOfMonth()) + 1;
+        // Calcular los días trabajados en el período (ignorando horas)
+        $diasTrabajados = $periodo_fecha_inicio->copy()->startOfDay()->diffInDays($periodo_fecha_fin->copy()->startOfDay()) + 1;
+        $diasTotalesMes = $periodo_fecha_inicio->copy()->startOfMonth()->startOfDay()->diffInDays($periodo_fecha_inicio->copy()->endOfMonth()->startOfDay()) + 1;
 
         // Calcular el porcentaje de días trabajados
         $porcentajeTrabajado = $diasTrabajados / $diasTotalesMes;

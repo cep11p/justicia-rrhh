@@ -25,15 +25,12 @@ class LiquidacionEmpleadoSeeder extends Seeder
 
         foreach ($empleados as $empleado) {
             // Verificar que el empleado tenga designación en el período
-            if ($empleado->tieneDesignacionEnPeriodo('202412')) {
+            if ($empleado->getDesignacionesParaPeriodo('202412')->isNotEmpty()) {
                 // Crear liquidación de empleado con valores iniciales
                 // Los totales se calcularán después con los conceptos
                 LiquidacionEmpleado::create([
                     'liquidacion_id' => $liquidacion->id,
                     'empleado_id' => $empleado->id,
-                    'total_remunerativo' => 0, // Se calculará con los conceptos
-                    'total_descuentos' => 0, // Se calculará con los conceptos
-                    'neto' => 0, // Se calculará con los conceptos
                 ]);
             }
         }

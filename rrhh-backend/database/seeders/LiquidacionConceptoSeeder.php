@@ -22,12 +22,14 @@ class LiquidacionConceptoSeeder extends Seeder
 
         foreach ($liquidacionEmpleados as $liquidacionEmpleado) {
             $empleado = $liquidacionEmpleado->empleado;
-            $designacion = $empleado->getDesignacionParaPeriodo($periodo);
+            $designaciones = $empleado->getDesignacionesParaPeriodo($periodo);
 
-            if (!$designacion) {
+            if ($designaciones->isEmpty()) {
                 continue;
             }
 
+            // Usar la primera designación (más reciente)
+            $designacion = $designaciones->first();
             $cargo = $designacion->cargo;
             $fechaIngreso = Carbon::parse($empleado->fecha_ingreso);
             $fechaPeriodo = Carbon::createFromFormat('Ym', $periodo);
@@ -49,7 +51,7 @@ class LiquidacionConceptoSeeder extends Seeder
                 LiquidacionConcepto::create([
                     'liquidacion_empleado_id' => $liquidacionEmpleado->id,
                     'concepto_id' => $conceptos['001']->id,
-                    'valor' => $basico,
+                    'importe' => $basico,
                 ]);
 
                 // Calcular ADICIONAL POR FUNCIÓN (5% del básico si tiene función)
@@ -64,7 +66,7 @@ class LiquidacionConceptoSeeder extends Seeder
                         LiquidacionConcepto::create([
                             'liquidacion_empleado_id' => $liquidacionEmpleado->id,
                             'concepto_id' => $conceptos['002']->id,
-                            'valor' => $adicionalFuncion,
+                            'importe' => $adicionalFuncion,
                         ]);
                     }
                 }
@@ -81,7 +83,7 @@ class LiquidacionConceptoSeeder extends Seeder
                         LiquidacionConcepto::create([
                             'liquidacion_empleado_id' => $liquidacionEmpleado->id,
                             'concepto_id' => $conceptos['003']->id,
-                            'valor' => $adicionalTitulo,
+                            'importe' => $adicionalTitulo,
                         ]);
                     }
                 }
@@ -105,7 +107,7 @@ class LiquidacionConceptoSeeder extends Seeder
                     LiquidacionConcepto::create([
                         'liquidacion_empleado_id' => $liquidacionEmpleado->id,
                         'concepto_id' => $conceptos['004']->id,
-                        'valor' => $adicionalAntiguedad,
+                        'importe' => $adicionalAntiguedad,
                     ]);
                 }
 
@@ -131,7 +133,7 @@ class LiquidacionConceptoSeeder extends Seeder
                     LiquidacionConcepto::create([
                         'liquidacion_empleado_id' => $liquidacionEmpleado->id,
                         'concepto_id' => $conceptos['005']->id,
-                        'valor' => $adicionalZona,
+                        'importe' => $adicionalZona,
                     ]);
                 }
 
@@ -161,7 +163,7 @@ class LiquidacionConceptoSeeder extends Seeder
                     LiquidacionConcepto::create([
                         'liquidacion_empleado_id' => $liquidacionEmpleado->id,
                         'concepto_id' => $conceptos['007']->id,
-                        'valor' => $descuentoJubilacion,
+                        'importe' => $descuentoJubilacion,
                     ]);
                 }
 
@@ -176,28 +178,12 @@ class LiquidacionConceptoSeeder extends Seeder
                     LiquidacionConcepto::create([
                         'liquidacion_empleado_id' => $liquidacionEmpleado->id,
                         'concepto_id' => $conceptos['008']->id,
-                        'valor' => $descuentoObraSocial,
+                        'importe' => $descuentoObraSocial,
                     ]);
                 }
 
-                // Actualizar totales en liquidación de empleado
-                $totalRemunerativo = LiquidacionConcepto::where('liquidacion_empleado_id', $liquidacionEmpleado->id)
-                    ->whereHas('concepto', function ($query) {
-                        $query->where('tipo', 'Remunerativo');
-                    })
-                    ->sum('valor');
-
-                $totalDescuentos = LiquidacionConcepto::where('liquidacion_empleado_id', $liquidacionEmpleado->id)
-                    ->whereHas('concepto', function ($query) {
-                        $query->where('tipo', 'Descuento');
-                    })
-                    ->sum('valor');
-
-                $liquidacionEmpleado->update([
-                    'total_remunerativo' => $totalRemunerativo,
-                    'total_descuentos' => $totalDescuentos,
-                    'neto' => $totalRemunerativo - $totalDescuentos,
-                ]);
+                // Nota: Los totales se calcularán en el servicio de liquidación
+                // ya que la tabla liquidacion_empleados no tiene esos campos
             }
         }
     }
