@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('conceptos', function (Blueprint $table) {
             $table->id();
             $table->string('codigo')->unique();
-            $table->string('descripcion');
-            $table->enum('tipo', ['fijo', 'porcentual']);
-            $table->boolean('es_remunerativo')->default(true);
+            $table->string('nombre');
+            $table->string('descripcion')->nullable();
+            $table->enum('tipo', ['Remunerativo', 'Descuento']);
+            $table->enum('tipo_valor', ['fijo', 'porcentual']);
             $table->timestamps();
         });
     }

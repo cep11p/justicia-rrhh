@@ -19,12 +19,12 @@ class LiquidacionEmpleado extends Model
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'liquidacion_id' => 'integer',
+        'empleado_id' => 'integer',
     ];
 
     /**
-     * Obtiene la liquidación de este empleado
+     * Obtiene la liquidación de este registro
      */
     public function liquidacion(): BelongsTo
     {
@@ -32,7 +32,7 @@ class LiquidacionEmpleado extends Model
     }
 
     /**
-     * Obtiene el empleado de esta liquidación
+     * Obtiene el empleado de este registro
      */
     public function empleado(): BelongsTo
     {
