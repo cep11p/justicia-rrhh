@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Carbon\Carbon;
 
 class Empleado extends Model
 {
@@ -69,6 +70,7 @@ class Empleado extends Model
             throw new \InvalidArgumentException('El período debe tener formato YYYYMM (ej: 202412)');
         }
 
+
         $fechaPeriodo = Carbon::createFromFormat('Ym', $periodo);
         $fechaInicio = $fechaPeriodo->startOfMonth();
         $fechaFin = $fechaPeriodo->endOfMonth();
@@ -84,6 +86,7 @@ class Empleado extends Model
     }
 
     /**
+
      * Obtiene la designación actual del empleado
      */
     public function getDesignacionActual(): ?Designacion
