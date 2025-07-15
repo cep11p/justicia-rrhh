@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('persona_id')->constrained('personas')->onDelete('cascade');
             $table->date('fecha_ingreso');
-            $table->enum('titulo', ['terciario', 'universitario', 'posgrado'])->default('sin_titulo');
+            $table->string('legajo')->unique();
+            $table->enum('titulo', ['sin_titulo', 'secundario', 'terciario', 'universitario', 'posgrado'])->default('sin_titulo');
             $table->timestamps();
         });
     }

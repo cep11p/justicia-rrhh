@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('liquidaciones', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('numero')->unique()->autoIncrement();
+            $table->unsignedInteger('numero')->unique();
             $table->string('periodo', 6); // YYYYMM
             $table->date('fecha_liquidacion');
             $table->text('observaciones')->nullable();
