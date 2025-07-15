@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,18 +17,18 @@ class Empleado extends Model
     protected $fillable = [
         'persona_id',
         'fecha_ingreso',
+        'legajo',
         'titulo',
     ];
 
     protected $casts = [
         'fecha_ingreso' => 'date',
+        'legajo' => 'string',
         'titulo' => 'string',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     /**
-     * Obtiene la persona asociada a este empleado
+     * Obtiene la persona asociada al empleado
      */
     public function persona(): BelongsTo
     {
@@ -45,7 +46,7 @@ class Empleado extends Model
     /**
      * Obtiene las liquidaciones del empleado
      */
-    public function liquidacionEmpleados(): HasMany
+    public function liquidaciones(): HasMany
     {
         return $this->hasMany(LiquidacionEmpleado::class);
     }

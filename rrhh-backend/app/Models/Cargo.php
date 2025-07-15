@@ -10,21 +10,22 @@ class Cargo extends Model
 {
     use HasFactory;
 
-    protected $table = 'cargos';
-
     protected $fillable = [
         'nombre',
+        'descripcion',
         'tiene_funcion',
     ];
 
     protected $casts = [
+        'nombre' => 'string',
+        'descripcion' => 'string',
         'tiene_funcion' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
     /**
-     * Obtiene las designaciones de este cargo
+     * Obtiene las designaciones
      */
     public function designaciones(): HasMany
     {

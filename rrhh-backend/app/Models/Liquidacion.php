@@ -15,18 +15,42 @@ class Liquidacion extends Model
     protected $fillable = [
         'numero',
         'periodo',
+        'fecha_liquidacion',
+        'observaciones',
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'numero' => 'integer',
+        'periodo' => 'string',
+        'fecha_liquidacion' => 'date',
+        'observaciones' => 'string',
     ];
 
     /**
-     * Obtiene los empleados de esta liquidación
+     * Obtiene las liquidaciones de empleados para esta liquidación
      */
     public function liquidacionEmpleados(): HasMany
     {
         return $this->hasMany(LiquidacionEmpleado::class);
     }
+
+    /**
+     * Obtiene los empleados liquidados en esta liquidación
+     */
+    public function empleados()
+    {
+        return $this->belongsToMany(Empleado::class, 'liquidacion_empleados')
+                    ->withPivot(['total_remunerativo', 'total_descuentos', 'neto'])
+                    ->withTimestamps();
+    }
+
+    /**
+     * Genera el siguiente número de liquidación
+     */
+    public static function generarSiguienteNumero(): int
+    {
+        $ultimoNumero = self::max('numero') ?? 0;
+        return $ultimoNumero + 1;
+    }
+
 }
