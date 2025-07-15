@@ -17,6 +17,8 @@ return new class extends Migration
             $table->decimal('valor', 10, 2);
             $table->foreignId('concepto_id')->constrained('conceptos')->onDelete('cascade');
             $table->foreignId('cargo_id')->nullable()->constrained('cargos')->onDelete('cascade');
+            $table->date('fecha_inicio');
+            $table->date('fecha_fin')->nullable();
             $table->timestamps();
         });
     }
