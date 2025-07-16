@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LiquidacionStoreRequest;
 use App\Services\LiquidacionService;
 use Illuminate\Http\Request;
 
 class LiquidacionController extends Controller
 {
 
-    protected $liquidacionService;
+    protected $service;
 
     public function __construct(LiquidacionService $liquidacionService)
     {
-        $this->liquidacionService = $liquidacionService;
+        $this->service = $liquidacionService;
     }
     /**
      * Display a listing of the resource.
@@ -25,9 +26,14 @@ class LiquidacionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(LiquidacionStoreRequest $request)
     {
-        //
+        $record = $this->service->store($request->validated());
+
+        return response()->json([
+            'message' => 'Liquidación creada satisfactoriamente',
+            'data' => $record->getAttributes()
+        ], 201);
     }
 
     /**
