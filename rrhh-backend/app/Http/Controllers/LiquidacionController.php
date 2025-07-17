@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LiquidacionStoreRequest;
+use App\Http\Resources\LiquidacionResource;
+use App\Models\Liquidacion;
 use App\Services\LiquidacionService;
 use Illuminate\Http\Request;
 
@@ -18,9 +20,16 @@ class LiquidacionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        dd('index');
+        try {
+            $list = $this->service->list($request);
+            return LiquidacionResource::collection($list);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

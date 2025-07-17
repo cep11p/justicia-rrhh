@@ -7,6 +7,7 @@ use App\Models\Empleado;
 use App\Models\Liquidacion;
 use App\Models\LiquidacionConcepto;
 use App\Models\LiquidacionEmpleado;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class LiquidacionService
@@ -80,6 +81,37 @@ class LiquidacionService
         });
     }
 
+    public function list(Request $request){
+
+        $query = Liquidacion::query();
+
+        if ($request->has('periodo')) {
+            $query->where('periodo', $request->periodo);
+        }
+
+        if ($request->has('persona_fullname')) {
+            $query->whereHas('liquidacionEmpleados.empleado.persona', function($query) use ($request) {
+                $query->where('fullname', 'like', '%' . $request->persona_fullname . '%');
+            });
+        }
+        if ($request->has('cuil')) {
+            $query->whereHas('liquidacionEmpleados.empleado', function($query) use ($request) {
+                $query->where('cuil', $request->cuil);
+            });
+        }
+
+        if ($request->has('legajo')) {
+            $query->whereHas('liquidacionEmpleados.empleado', function($query) use ($request) {
+                $query->where('legajo', $request->legajo);
+            });
+        }
+
+        return $query->with([
+            'liquidacionEmpleados.empleado.persona',
+            // 'liquidacionEmpleados.empleado.designaciones.cargo',
+            // 'liquidacionEmpleados.empleado.designaciones.estructuraOrganizativa'
+            ])->get();
+    }
 
     /**
      * Calcula los conceptos remunerativos para una liquidación.
