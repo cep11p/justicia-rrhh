@@ -76,4 +76,17 @@ class Concepto extends Model
         return $this->tipo_valor === 'porcentual';
     }
 
+    /**
+     * Obtiene el valor de este concepto para un período específico
+     *
+     * @param string $periodo Período en formato YYYYMM (ej: '202401' para enero 2024)
+     * @return ValorConcepto|null El valor del concepto para el período, o null si no existe
+     */
+    public function valorConcepto(string $periodo): ?ValorConcepto
+    {
+        return $this->valorConceptos()
+            ->where('periodo', $periodo)
+            ->first();
+    }
+
 }
