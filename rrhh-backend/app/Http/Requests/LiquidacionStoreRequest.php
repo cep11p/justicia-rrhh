@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Liquidacion;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -23,9 +24,26 @@ class LiquidacionStoreRequest extends FormRequest
      */
     public function rules(): array
     {
+
+
         return [
             'empleado_id' => 'required|integer|exists:empleados,id',
             'periodo' => 'required|string|regex:/^\d{6}$/|date_format:Ym',
+
+            'liquidacion_unica' => [
+                'nullable',
+                function ($attribute, $value, $fail) {
+                    $existe = Liquidacion::where('periodo', $this->input('periodo'))
+                        ->whereHas('empleados', function($query) {
+                            $query->where('empleado_id', $this->input('empleado_id'));
+                        })
+                        ->exists();
+
+                    if ($existe) {
+                        $fail('Ya existe una liquidación para este empleado y período.');
+                    }
+                }
+            ],
         ];
     }
 

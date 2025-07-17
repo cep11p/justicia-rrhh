@@ -51,56 +51,125 @@ class LiquidacionService
         return $resultado;
     }
 
+    /**
+     * Crea una liquidación.
+     *
+     * Este método crea una liquidación, incluyendo
+     * el concepto básico y los conceptos adicionales por función, título, antigüedad y zona.
+     *
+     * @param array $data Los datos de la liquidación
+     * @return Liquidacion La liquidación creada
+     */
     public function store(array $data)
     {
         // Iniciar una transacción
         return DB::transaction(function () use ($data) {
-            // Chequear si ya existe una liquidación para ese empleado y ese periodo
-            $liquidacion = Liquidacion::where('periodo', $data['periodo'] ?? null)
-                ->whereHas('empleados', function($query) use ($data) {
-                    if (isset($data['empleado_id'])) {
-                        $query->where('empleado_id', $data['empleado_id']);
-                    }
-                })
-                ->first();
 
-
-            if ($liquidacion) {
-                // Si ya existe una liquidación para ese empleado y ese periodo, notificar que existe
-                throw new \Exception('Ya existe una liquidación para este empleado y período.');
-            }
-
-            // Crear una nueva liquidación y que el número empiece desde 1
-
-            // Obtener el último número de liquidación existente
-            $ultimoNumero = \App\Models\Liquidacion::max('numero');
-
-            // Si no hay ninguna liquidación, empezar desde 1
-            $nuevoNumero = $ultimoNumero ? $ultimoNumero + 1 : 1;
-
-            $liquidacion = \App\Models\Liquidacion::create([
-                'numero' => $nuevoNumero,
+            $liquidacion = Liquidacion::create([
+                'numero' => Liquidacion::max('numero') + 1,
                 'periodo' => $data['periodo'] ?? null,
                 'fecha_liquidacion' => $data['fecha_liquidacion'] ?? now(),
                 'observaciones' => $data['observaciones'] ?? null,
             ]);
 
-            $empleado = Empleado::find($data['empleado_id']);
 
-            $this->crearLiquidacionConceptoBasico($liquidacion, $empleado, $data['periodo']);
+
+            $this->calcularConceptosRemunerativos($liquidacion, $data['empleado_id'], $data['periodo']);
 
             return $liquidacion;
         });
     }
 
-    public function crearLiquidacionConceptoBasico(Liquidacion $liquidacion, Empleado $empleado, string $periodo)
-    {
-        $colleccion_basicos = $empleado->getImportePorDesginacion($periodo);
 
-        foreach ($colleccion_basicos as $basico) {
+    /**
+     * Calcula los conceptos remunerativos para una liquidación.
+     *
+     * Este método calcula los conceptos remunerativos para una liquidación, incluyendo
+     * el concepto básico y los conceptos adicionales por función, título, antigüedad y zona.
+     *
+     * @param Liquidacion $liquidacion La liquidación a la que se agregarán los conceptos
+     * @param Empleado $empleado El empleado a quien se le calcularán los conceptos
+     * @param string $periodo El período de la liquidació
+     * @return void
+     */
+    public function calcularConceptosRemunerativos(Liquidacion $liquidacion, $empleado_id, string $periodo){
+
+        //el base tiene que estar siempre calculado para poder calcular los otros conceptos
+        $this->crearLiquidacionConceptoBasico($liquidacion, $empleado_id, $periodo);
+
+        //concepto adicional por funcion
+        $this->crearRemunerativo($liquidacion, $periodo, '002');
+        //concepto adicional por titulo
+        $this->crearRemunerativo($liquidacion, $periodo, '003');
+        //concepto adicional por antiguedad
+        $this->crearRemunerativo($liquidacion, $periodo, '004');
+        //concepto adicional por zona
+        $this->crearRemunerativo($liquidacion, $periodo, '005');
+    }
+
+    /**
+     * Crea un concepto remunerativo para una liquidación.
+     *
+     * Este método calcula el importe de un concepto remunerativo basado en el importe
+     * de los conceptos básicos de la liquidación y el valor del concepto remunerativo.
+     *
+     * @param Liquidacion $liquidacion La liquidación a la que se agregará el concepto
+     * @param string $periodo El período de la liquidación
+     * @param string $codigo El código del concepto remunerativo
+     * @return void
+     */
+    public function crearRemunerativo(Liquidacion $liquidacion, string $periodo, string $codigo){
+        $colleccion_conceptos_basicos = LiquidacionConcepto::where('liquidacion_id', $liquidacion->id)
+            ->whereHas('concepto', function($query) {
+                $query->where('codigo', '001');
+            })
+            ->get();
+
+
+        $concepto = Concepto::where('codigo', $codigo)->first();
+        $valor_concepto = $concepto->valorConcepto($periodo);
+
+        if (!$valor_concepto) {
+            throw new \Exception("No existe un valor para el concepto {$concepto->codigo} en el período {$periodo}");
+        }
+
+        foreach ($colleccion_conceptos_basicos as $basico) {
 
             $liquidacion_concepto_atributos = [
                 'liquidacion_id' => $liquidacion->id,
+                'concepto_id' => $concepto->id,
+                'importe' => $basico['importe'] * ($valor_concepto->valor / 100),
+                'padre_id' => $basico->id,
+            ];
+            LiquidacionConcepto::create($liquidacion_concepto_atributos);
+
+        }
+    }
+
+    /**
+     * Crea un concepto básico para una liquidación.
+     *
+     * Este método crea un concepto básico para una liquidación
+     *
+     * @param Liquidacion $liquidacion para vincular en el concepto
+     * @param string $empleado_id El ID del empleado a quien se le agregará el concepto
+     * @param string $periodo El período de la liquidación
+     * @return void
+     */
+    public function crearLiquidacionConceptoBasico(Liquidacion $liquidacion, $empleado_id, string $periodo)
+    {
+        $empleado = Empleado::find($empleado_id);
+
+        $liquidacion_empleado = LiquidacionEmpleado::create([
+            'liquidacion_id' => $liquidacion->id,
+            'empleado_id' => $empleado_id,
+        ]);
+
+        $colleccion_basicos = $empleado->getImportePorDesginacion($periodo);
+        foreach ($colleccion_basicos as $basico) {
+
+            $liquidacion_concepto_atributos = [
+                'liquidacion_empleado_id' => $$liquidacion_empleado->id,
                 'concepto_id' => Concepto::where('codigo', '001')->first()->id,
                 'importe' => $basico['importe'],
             ];
