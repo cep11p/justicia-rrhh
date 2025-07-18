@@ -7,6 +7,7 @@ use App\Models\Empleado;
 use App\Models\Liquidacion;
 use App\Models\LiquidacionConcepto;
 use App\Models\LiquidacionEmpleado;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class LiquidacionService
@@ -72,8 +73,6 @@ class LiquidacionService
                 'observaciones' => $data['observaciones'] ?? null,
             ]);
 
-
-
             $this->calcularConceptosRemunerativos($liquidacion, $data['empleado_id'], $data['periodo']);
 
             return $liquidacion;
@@ -119,12 +118,14 @@ class LiquidacionService
      * @return void
      */
     public function crearRemunerativo(Liquidacion $liquidacion, string $periodo, string $codigo){
-        $colleccion_conceptos_basicos = LiquidacionConcepto::where('liquidacion_id', $liquidacion->id)
-            ->whereHas('concepto', function($query) {
-                $query->where('codigo', '001');
-            })
-            ->get();
 
+        $liquidacion_empleado_id = $liquidacion->liquidacionEmpleados->first()->id;
+
+        $colleccion_conceptos_basicos = LiquidacionConcepto::where('liquidacion_empleado_id', $liquidacion_empleado_id)
+        ->whereHas('concepto', function($query) {
+            $query->where('codigo', '001');
+        })
+        ->get();
 
         $concepto = Concepto::where('codigo', $codigo)->first();
         $valor_concepto = $concepto->valorConcepto($periodo);
@@ -136,7 +137,7 @@ class LiquidacionService
         foreach ($colleccion_conceptos_basicos as $basico) {
 
             $liquidacion_concepto_atributos = [
-                'liquidacion_id' => $liquidacion->id,
+                'liquidacion_empleado_id' => $liquidacion_empleado_id,
                 'concepto_id' => $concepto->id,
                 'importe' => $basico['importe'] * ($valor_concepto->valor / 100),
                 'padre_id' => $basico->id,
@@ -169,7 +170,7 @@ class LiquidacionService
         foreach ($colleccion_basicos as $basico) {
 
             $liquidacion_concepto_atributos = [
-                'liquidacion_empleado_id' => $$liquidacion_empleado->id,
+                'liquidacion_empleado_id' => $liquidacion_empleado->id,
                 'concepto_id' => Concepto::where('codigo', '001')->first()->id,
                 'importe' => $basico['importe'],
             ];
