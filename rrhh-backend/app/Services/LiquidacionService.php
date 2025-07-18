@@ -73,9 +73,8 @@ class LiquidacionService
                 'observaciones' => $data['observaciones'] ?? null,
             ]);
 
-
-
             $this->calcularConceptosRemunerativos($liquidacion, $data['empleado_id'], $data['periodo']);
+            $this->calcularConceptosNoRemunerativos($liquidacion, $data['empleado_id'], $data['periodo']);
 
             return $liquidacion;
         });
@@ -139,6 +138,37 @@ class LiquidacionService
         $this->crearRemunerativo($liquidacion, $periodo, '005');
     }
 
+    public function calcularConceptosNoRemunerativos(Liquidacion $liquidacion, $empleado_id, string $periodo){
+
+        //concepto adicional por funcion
+        $this->crearNoRemunerativo($liquidacion, $periodo, '007');
+        $this->crearNoRemunerativo($liquidacion, $periodo, '008');
+    }
+
+    public function crearNoRemunerativo(Liquidacion $liquidacion, string $periodo, string $codigo){
+
+        $liquidacion_empleado_id = $liquidacion->liquidacionEmpleados->first()->id;
+
+        $total_remunerativo = LiquidacionConcepto::where('liquidacion_empleado_id', $liquidacion_empleado_id)->conRemunerativos()->sum('importe');
+
+        $concepto = Concepto::where('codigo', $codigo)->first();
+        $valor_concepto = $concepto->valorConcepto($periodo);
+
+        if (!$valor_concepto) {
+            throw new \Exception("No existe un valor para el concepto {$concepto->codigo} en el período {$periodo}");
+        }
+
+
+        $liquidacion_concepto_atributos = [
+            'liquidacion_empleado_id' => $liquidacion_empleado_id,
+            'concepto_id' => $concepto->id,
+            'importe' => $total_remunerativo * ($valor_concepto->valor / 100),
+            'padre_id' => null,
+        ];
+        LiquidacionConcepto::create($liquidacion_concepto_atributos);
+
+    }
+
     /**
      * Crea un concepto remunerativo para una liquidación.
      *
@@ -151,12 +181,14 @@ class LiquidacionService
      * @return void
      */
     public function crearRemunerativo(Liquidacion $liquidacion, string $periodo, string $codigo){
-        $colleccion_conceptos_basicos = LiquidacionConcepto::where('liquidacion_id', $liquidacion->id)
-            ->whereHas('concepto', function($query) {
-                $query->where('codigo', '001');
-            })
-            ->get();
 
+        $liquidacion_empleado_id = $liquidacion->liquidacionEmpleados->first()->id;
+
+        $colleccion_conceptos_basicos = LiquidacionConcepto::where('liquidacion_empleado_id', $liquidacion_empleado_id)
+        ->whereHas('concepto', function($query) {
+            $query->where('codigo', '001');
+        })
+        ->get();
 
         $concepto = Concepto::where('codigo', $codigo)->first();
         $valor_concepto = $concepto->valorConcepto($periodo);
@@ -168,7 +200,7 @@ class LiquidacionService
         foreach ($colleccion_conceptos_basicos as $basico) {
 
             $liquidacion_concepto_atributos = [
-                'liquidacion_id' => $liquidacion->id,
+                'liquidacion_empleado_id' => $liquidacion_empleado_id,
                 'concepto_id' => $concepto->id,
                 'importe' => $basico['importe'] * ($valor_concepto->valor / 100),
                 'padre_id' => $basico->id,
@@ -201,7 +233,7 @@ class LiquidacionService
         foreach ($colleccion_basicos as $basico) {
 
             $liquidacion_concepto_atributos = [
-                'liquidacion_empleado_id' => $$liquidacion_empleado->id,
+                'liquidacion_empleado_id' => $liquidacion_empleado->id,
                 'concepto_id' => Concepto::where('codigo', '001')->first()->id,
                 'importe' => $basico['importe'],
             ];
