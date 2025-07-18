@@ -14,14 +14,14 @@ class LiquidacionConcepto extends Model
 
     protected $fillable = [
         'importe',
-        'liquidacion_empleado_id',
+        'liquidacion_id',
         'concepto_id',
         'padre_id',
     ];
 
     protected $casts = [
         'importe' => 'decimal:2',
-        'liquidacion_empleado_id' => 'integer',
+        'liquidacion_id' => 'integer',
         'concepto_id' => 'integer',
         'padre_id' => 'integer',
     ];
