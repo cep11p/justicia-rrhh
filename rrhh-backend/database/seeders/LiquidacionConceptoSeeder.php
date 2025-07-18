@@ -7,6 +7,7 @@ use App\Models\LiquidacionEmpleado;
 use App\Models\Concepto;
 use App\Models\ValorConcepto;
 use App\Models\Empleado;
+use App\Models\Liquidacion;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
@@ -18,10 +19,11 @@ class LiquidacionConceptoSeeder extends Seeder
     public function run(): void
     {
         $periodo = '202412';
-        $liquidacionEmpleados = LiquidacionEmpleado::with(['empleado.persona', 'empleado.designaciones.cargo'])->get();
+        $lista_liquidaciones = Liquidacion::with(['empleado.persona', 'empleado.designaciones.cargo'])->get();
 
-        foreach ($liquidacionEmpleados as $liquidacionEmpleado) {
-            $empleado = $liquidacionEmpleado->empleado;
+
+        foreach ($lista_liquidaciones as $liquidacion) {
+            $empleado = $liquidacion->empleado;
             $designaciones = $empleado->getDesignacionesParaPeriodo($periodo);
 
             if ($designaciones->isEmpty()) {
@@ -49,10 +51,11 @@ class LiquidacionConceptoSeeder extends Seeder
 
                 // Crear concepto BÁSICO
                 LiquidacionConcepto::create([
-                    'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+                    'liquidacion_id' => $liquidacion->id,
                     'concepto_id' => $conceptos['001']->id,
                     'importe' => $basico,
                 ]);
+
 
                 // Calcular ADICIONAL POR FUNCIÓN (5% del básico si tiene función)
                 if ($cargo->tiene_funcion) {
@@ -64,15 +67,15 @@ class LiquidacionConceptoSeeder extends Seeder
                         $adicionalFuncion = $basico * ($valorFuncion->valor / 100);
 
                         LiquidacionConcepto::create([
-                            'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+                            'liquidacion_id' => $liquidacion->id,
                             'concepto_id' => $conceptos['002']->id,
                             'importe' => $adicionalFuncion,
                         ]);
                     }
                 }
 
-                // Calcular ADICIONAL POR TÍTULO (10% del básico si tiene título universitario)
-                if ($empleado->titulo === 'universitario') {
+                // Calcular ADICIONAL POR TÍTULO
+                if ($empleado->titulo) {
                     $valorTitulo = ValorConcepto::where('concepto_id', $conceptos['003']->id)
                         ->where('periodo', $periodo)
                         ->first();
@@ -81,7 +84,7 @@ class LiquidacionConceptoSeeder extends Seeder
                         $adicionalTitulo = $basico * ($valorTitulo->valor / 100);
 
                         LiquidacionConcepto::create([
-                            'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+                            'liquidacion_id' => $liquidacion->id,
                             'concepto_id' => $conceptos['003']->id,
                             'importe' => $adicionalTitulo,
                         ]);
@@ -102,10 +105,10 @@ class LiquidacionConceptoSeeder extends Seeder
                         $sumaBasico += $basico * 0.10; // Adicional por título
                     }
 
-                    $adicionalAntiguedad = $sumaBasico * ($valorAntiguedad->valor / 100) * $aniosAntiguedad;
+                    $adicionalAntiguedad = $sumaBasico * (($valorAntiguedad->valor / 100) * $aniosAntiguedad);
 
                     LiquidacionConcepto::create([
-                        'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+                        'liquidacion_id' => $liquidacion->id,
                         'concepto_id' => $conceptos['004']->id,
                         'importe' => $adicionalAntiguedad,
                     ]);
@@ -131,7 +134,7 @@ class LiquidacionConceptoSeeder extends Seeder
                     $adicionalZona = $sumaParaZona * ($valorZona->valor / 100);
 
                     LiquidacionConcepto::create([
-                        'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+                        'liquidacion_id' => $liquidacion->id,
                         'concepto_id' => $conceptos['005']->id,
                         'importe' => $adicionalZona,
                     ]);
@@ -161,7 +164,7 @@ class LiquidacionConceptoSeeder extends Seeder
                     $descuentoJubilacion = $totalRemunerativo * ($valorJubilacion->valor / 100);
 
                     LiquidacionConcepto::create([
-                        'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+                        'liquidacion_id' => $liquidacion->id,
                         'concepto_id' => $conceptos['007']->id,
                         'importe' => $descuentoJubilacion,
                     ]);
@@ -176,14 +179,11 @@ class LiquidacionConceptoSeeder extends Seeder
                     $descuentoObraSocial = $totalRemunerativo * ($valorObraSocial->valor / 100);
 
                     LiquidacionConcepto::create([
-                        'liquidacion_empleado_id' => $liquidacionEmpleado->id,
+                        'liquidacion_id' => $liquidacion->id,
                         'concepto_id' => $conceptos['008']->id,
                         'importe' => $descuentoObraSocial,
                     ]);
                 }
-
-                // Nota: Los totales se calcularán en el servicio de liquidación
-                // ya que la tabla liquidacion_empleados no tiene esos campos
             }
         }
     }
