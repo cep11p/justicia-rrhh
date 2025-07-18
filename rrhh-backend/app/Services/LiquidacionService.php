@@ -74,6 +74,7 @@ class LiquidacionService
             ]);
 
             $this->calcularConceptosRemunerativos($liquidacion, $data['empleado_id'], $data['periodo']);
+            $this->calcularConceptosNoRemunerativos($liquidacion, $data['empleado_id'], $data['periodo']);
 
             return $liquidacion;
         });
@@ -104,6 +105,37 @@ class LiquidacionService
         $this->crearRemunerativo($liquidacion, $periodo, '004');
         //concepto adicional por zona
         $this->crearRemunerativo($liquidacion, $periodo, '005');
+    }
+
+    public function calcularConceptosNoRemunerativos(Liquidacion $liquidacion, $empleado_id, string $periodo){
+
+        //concepto adicional por funcion
+        $this->crearNoRemunerativo($liquidacion, $periodo, '007');
+        $this->crearNoRemunerativo($liquidacion, $periodo, '008');
+    }
+
+    public function crearNoRemunerativo(Liquidacion $liquidacion, string $periodo, string $codigo){
+
+        $liquidacion_empleado_id = $liquidacion->liquidacionEmpleados->first()->id;
+
+        $total_remunerativo = LiquidacionConcepto::where('liquidacion_empleado_id', $liquidacion_empleado_id)->conRemunerativos()->sum('importe');
+
+        $concepto = Concepto::where('codigo', $codigo)->first();
+        $valor_concepto = $concepto->valorConcepto($periodo);
+
+        if (!$valor_concepto) {
+            throw new \Exception("No existe un valor para el concepto {$concepto->codigo} en el período {$periodo}");
+        }
+
+
+        $liquidacion_concepto_atributos = [
+            'liquidacion_empleado_id' => $liquidacion_empleado_id,
+            'concepto_id' => $concepto->id,
+            'importe' => $total_remunerativo * ($valor_concepto->valor / 100),
+            'padre_id' => null,
+        ];
+        LiquidacionConcepto::create($liquidacion_concepto_atributos);
+
     }
 
     /**
