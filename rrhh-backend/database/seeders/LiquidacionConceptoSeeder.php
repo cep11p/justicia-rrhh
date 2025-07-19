@@ -3,10 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\LiquidacionConcepto;
-use App\Models\LiquidacionEmpleado;
 use App\Models\Concepto;
 use App\Models\ValorConcepto;
-use App\Models\Empleado;
 use App\Models\Liquidacion;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;

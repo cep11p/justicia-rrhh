@@ -2,9 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\LiquidacionConcepto;
-use App\Models\LiquidacionEmpleado;
 use App\Models\Concepto;
+use App\Models\Liquidacion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,7 +19,7 @@ class LiquidacionConceptoFactory extends Factory
     public function definition(): array
     {
         return [
-            'liquidacion_empleado_id' => LiquidacionEmpleado::factory(),
+            'liquidacion_id' => Liquidacion::factory(),
             'concepto_id' => Concepto::factory(),
             'valor' => $this->faker->randomFloat(2, 1000, 500000),
         ];
@@ -87,16 +86,6 @@ class LiquidacionConceptoFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'valor' => $this->faker->randomFloat(2, 1000, 50000),
-        ]);
-    }
-
-    /**
-     * Concepto con liquidación de empleado específica
-     */
-    public function conLiquidacionEmpleado(LiquidacionEmpleado $liquidacionEmpleado): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'liquidacion_empleado_id' => $liquidacionEmpleado->id,
         ]);
     }
 

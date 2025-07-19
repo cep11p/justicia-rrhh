@@ -6,7 +6,6 @@ use App\Models\Concepto;
 use App\Models\Empleado;
 use App\Models\Liquidacion;
 use App\Models\LiquidacionConcepto;
-use App\Models\LiquidacionEmpleado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -71,6 +70,7 @@ class LiquidacionService
                 'periodo' => $data['periodo'] ?? null,
                 'fecha_liquidacion' => $data['fecha_liquidacion'] ?? now(),
                 'observaciones' => $data['observaciones'] ?? null,
+                'empleado_id' => $data['empleado_id'] ?? null,
             ]);
 
             $this->calcularConceptosRemunerativos($liquidacion, $data['empleado_id'], $data['periodo']);
@@ -89,26 +89,24 @@ class LiquidacionService
         }
 
         if ($request->has('persona_fullname')) {
-            $query->whereHas('liquidacionEmpleados.empleado.persona', function($query) use ($request) {
+            $query->whereHas('empleado.persona', function($query) use ($request) {
                 $query->where('fullname', 'like', '%' . $request->persona_fullname . '%');
             });
         }
         if ($request->has('cuil')) {
-            $query->whereHas('liquidacionEmpleados.empleado', function($query) use ($request) {
+            $query->whereHas('empleado', function($query) use ($request) {
                 $query->where('cuil', $request->cuil);
             });
         }
 
         if ($request->has('legajo')) {
-            $query->whereHas('liquidacionEmpleados.empleado', function($query) use ($request) {
+            $query->whereHas('empleado', function($query) use ($request) {
                 $query->where('legajo', $request->legajo);
             });
         }
 
         return $query->with([
-            'liquidacionEmpleados.empleado.persona',
-            // 'liquidacionEmpleados.empleado.designaciones.cargo',
-            // 'liquidacionEmpleados.empleado.designaciones.estructuraOrganizativa'
+            'empleado.persona'
             ])->get();
     }
 
@@ -147,9 +145,7 @@ class LiquidacionService
 
     public function crearNoRemunerativo(Liquidacion $liquidacion, string $periodo, string $codigo){
 
-        $liquidacion_empleado_id = $liquidacion->liquidacionEmpleados->first()->id;
-
-        $total_remunerativo = LiquidacionConcepto::where('liquidacion_empleado_id', $liquidacion_empleado_id)->conRemunerativos()->sum('importe');
+        $total_remunerativo = LiquidacionConcepto::where('liquidacion_id', $liquidacion->id)->conRemunerativos()->sum('importe');
 
         $concepto = Concepto::where('codigo', $codigo)->first();
         $valor_concepto = $concepto->valorConcepto($periodo);
@@ -160,7 +156,7 @@ class LiquidacionService
 
 
         $liquidacion_concepto_atributos = [
-            'liquidacion_empleado_id' => $liquidacion_empleado_id,
+            'liquidacion_id' => $liquidacion->id,
             'concepto_id' => $concepto->id,
             'importe' => $total_remunerativo * ($valor_concepto->valor / 100),
             'padre_id' => null,
@@ -182,9 +178,7 @@ class LiquidacionService
      */
     public function crearRemunerativo(Liquidacion $liquidacion, string $periodo, string $codigo){
 
-        $liquidacion_empleado_id = $liquidacion->liquidacionEmpleados->first()->id;
-
-        $colleccion_conceptos_basicos = LiquidacionConcepto::where('liquidacion_empleado_id', $liquidacion_empleado_id)
+        $colleccion_conceptos_basicos = LiquidacionConcepto::where('liquidacion_id', $liquidacion->id)
         ->whereHas('concepto', function($query) {
             $query->where('codigo', '001');
         })
@@ -200,7 +194,7 @@ class LiquidacionService
         foreach ($colleccion_conceptos_basicos as $basico) {
 
             $liquidacion_concepto_atributos = [
-                'liquidacion_empleado_id' => $liquidacion_empleado_id,
+                'liquidacion_id' => $liquidacion->id,
                 'concepto_id' => $concepto->id,
                 'importe' => $basico['importe'] * ($valor_concepto->valor / 100),
                 'padre_id' => $basico->id,
@@ -224,16 +218,11 @@ class LiquidacionService
     {
         $empleado = Empleado::find($empleado_id);
 
-        $liquidacion_empleado = LiquidacionEmpleado::create([
-            'liquidacion_id' => $liquidacion->id,
-            'empleado_id' => $empleado_id,
-        ]);
-
         $colleccion_basicos = $empleado->getImportePorDesginacion($periodo);
         foreach ($colleccion_basicos as $basico) {
 
             $liquidacion_concepto_atributos = [
-                'liquidacion_empleado_id' => $liquidacion_empleado->id,
+                'liquidacion_id' => $liquidacion->id,
                 'concepto_id' => Concepto::where('codigo', '001')->first()->id,
                 'importe' => $basico['importe'],
             ];

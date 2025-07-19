@@ -27,14 +27,6 @@ class LiquidacionConcepto extends Model
     ];
 
     /**
-     * Obtiene la liquidación de empleado de este concepto
-     */
-    public function liquidacionEmpleado(): BelongsTo
-    {
-        return $this->belongsTo(LiquidacionEmpleado::class);
-    }
-
-    /**
      * Obtiene el concepto de este registro
      */
     public function concepto(): BelongsTo
@@ -43,19 +35,19 @@ class LiquidacionConcepto extends Model
     }
 
     /**
-     * Obtiene la liquidación a través de liquidacionEmpleado
+     * Obtiene la liquidación a través de liquidacion
      */
     public function liquidacion()
     {
-        return $this->liquidacionEmpleado->liquidacion();
+        return $this->belongsTo(Liquidacion::class);
     }
 
     /**
-     * Obtiene el empleado a través de liquidacionEmpleado
+     * Obtiene el empleado a través de liquidacion
      */
     public function empleado()
     {
-        return $this->liquidacionEmpleado->empleado();
+        return $this->liquidacion->empleado();
     }
 
     /**

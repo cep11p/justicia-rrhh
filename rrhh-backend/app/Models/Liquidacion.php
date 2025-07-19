@@ -18,6 +18,7 @@ class Liquidacion extends Model
         'periodo',
         'fecha_liquidacion',
         'observaciones',
+        'empleado_id',
     ];
 
     protected $casts = [
@@ -25,6 +26,7 @@ class Liquidacion extends Model
         'periodo' => 'string',
         'fecha_liquidacion' => 'date',
         'observaciones' => 'string',
+        'empleado_id' => 'integer',
     ];
 
     /**
@@ -33,24 +35,6 @@ class Liquidacion extends Model
     public function empleado(): BelongsTo
     {
         return $this->belongsTo(Empleado::class);
-    }
-
-    /**
-     * Obtiene las liquidaciones de empleados para esta liquidación
-     */
-    public function liquidacionEmpleados(): HasMany
-    {
-        return $this->hasMany(LiquidacionEmpleado::class);
-    }
-
-    /**
-     * Obtiene los empleados liquidados en esta liquidación
-     */
-    public function empleados()
-    {
-        return $this->belongsToMany(Empleado::class, 'liquidacion_empleados')
-                    ->withPivot(['total_remunerativo', 'total_descuentos', 'neto'])
-                    ->withTimestamps();
     }
 
     /**
