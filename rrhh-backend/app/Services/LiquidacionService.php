@@ -187,6 +187,13 @@ class LiquidacionService
         $concepto = Concepto::where('codigo', $codigo)->first();
         $valor_concepto = $concepto->valorConcepto($periodo);
 
+        //si es el concepto de antiguedad, se tiene que calcular el importe de la antiguedad
+        if($concepto->codigo == '004'){
+            $pre_antiguedad = $liquidacion->empleado->pre_antiguedad;
+            $antiguedad = $liquidacion->empleado->antiguedad + $pre_antiguedad;
+            $valor_concepto = $valor_concepto->valor * $antiguedad;
+        }
+
         if (!$valor_concepto) {
             throw new \Exception("No existe un valor para el concepto {$concepto->codigo} en el período {$periodo}");
         }
