@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Liquidacion extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $table = 'liquidaciones';
 
@@ -28,6 +30,18 @@ class Liquidacion extends Model
         'observaciones' => 'string',
         'empleado_id' => 'integer',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Evento que se ejecuta DESPUÉS de eliminar el registro
+        static::deleted(function ($liquidacion) {
+            $liquidacion->numero = null;
+            $liquidacion->save();
+        });
+
+    }
 
     /**
      * Obtiene el empleado de este registro

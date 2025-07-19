@@ -64,8 +64,11 @@ class LiquidacionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function delete(Liquidacion $liquidacion)
     {
-        //
+        $liquidacion->delete();
+        return response()->json([
+            'message' => 'Liquidación eliminada satisfactoriamente'
+        ], 200);
     }
 }
