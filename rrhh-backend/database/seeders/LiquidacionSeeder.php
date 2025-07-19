@@ -16,6 +16,7 @@ class LiquidacionSeeder extends Seeder
         Liquidacion::create([
             'numero' => 1,
             'periodo' => '202412',
+            'empleado_id' => 1,
             'fecha_liquidacion' => '2024-12-31',
             'observaciones' => 'Liquidación de haberes diciembre 2024',
         ]);

@@ -14,25 +14,17 @@ class LiquidacionConcepto extends Model
 
     protected $fillable = [
         'importe',
-        'liquidacion_empleado_id',
+        'liquidacion_id',
         'concepto_id',
         'padre_id',
     ];
 
     protected $casts = [
         'importe' => 'decimal:2',
-        'liquidacion_empleado_id' => 'integer',
+        'liquidacion_id' => 'integer',
         'concepto_id' => 'integer',
         'padre_id' => 'integer',
     ];
-
-    /**
-     * Obtiene la liquidación de empleado de este concepto
-     */
-    public function liquidacionEmpleado(): BelongsTo
-    {
-        return $this->belongsTo(LiquidacionEmpleado::class);
-    }
 
     /**
      * Obtiene el concepto de este registro
@@ -43,19 +35,19 @@ class LiquidacionConcepto extends Model
     }
 
     /**
-     * Obtiene la liquidación a través de liquidacionEmpleado
+     * Obtiene la liquidación a través de liquidacion
      */
     public function liquidacion()
     {
-        return $this->liquidacionEmpleado->liquidacion();
+        return $this->belongsTo(Liquidacion::class);
     }
 
     /**
-     * Obtiene el empleado a través de liquidacionEmpleado
+     * Obtiene el empleado a través de liquidacion
      */
     public function empleado()
     {
-        return $this->liquidacionEmpleado->empleado();
+        return $this->liquidacion->empleado();
     }
 
     /**

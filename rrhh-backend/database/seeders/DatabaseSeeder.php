@@ -21,7 +21,6 @@ class DatabaseSeeder extends Seeder
             DesignacionSeeder::class,
             ValorConceptoSeeder::class,
             LiquidacionSeeder::class,
-            LiquidacionEmpleadoSeeder::class,
             LiquidacionConceptoSeeder::class,
         ]);
     }

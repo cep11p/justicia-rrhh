@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Liquidacion extends Model
@@ -17,6 +18,7 @@ class Liquidacion extends Model
         'periodo',
         'fecha_liquidacion',
         'observaciones',
+        'empleado_id',
     ];
 
     protected $casts = [
@@ -24,24 +26,15 @@ class Liquidacion extends Model
         'periodo' => 'string',
         'fecha_liquidacion' => 'date',
         'observaciones' => 'string',
+        'empleado_id' => 'integer',
     ];
 
     /**
-     * Obtiene las liquidaciones de empleados para esta liquidación
+     * Obtiene el empleado de este registro
      */
-    public function liquidacionEmpleados(): HasMany
+    public function empleado(): BelongsTo
     {
-        return $this->hasMany(LiquidacionEmpleado::class);
-    }
-
-    /**
-     * Obtiene los empleados liquidados en esta liquidación
-     */
-    public function empleados()
-    {
-        return $this->belongsToMany(Empleado::class, 'liquidacion_empleados')
-                    ->withPivot(['total_remunerativo', 'total_descuentos', 'neto'])
-                    ->withTimestamps();
+        return $this->belongsTo(Empleado::class);
     }
 
     /**
