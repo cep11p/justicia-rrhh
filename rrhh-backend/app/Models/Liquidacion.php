@@ -73,4 +73,18 @@ class Liquidacion extends Model
 
     }
 
+    public function conceptosRemunerativos()
+    {
+        return $this->liquidacionConceptos()->whereHas('concepto', function($query) {
+            $query->whereIn('tipo', ['remunerativo']);
+        });
+    }
+
+    public function conceptosNoRemunerativos()
+    {
+        return $this->liquidacionConceptos()->whereHas('concepto', function($query) {
+            $query->whereIn('tipo', ['descuento']);
+        });
+    }
+
 }
