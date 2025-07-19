@@ -6,6 +6,7 @@ use App\Http\Requests\LiquidacionStoreRequest;
 use App\Http\Resources\LiquidacionResource;
 use App\Models\Liquidacion;
 use App\Services\LiquidacionService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class LiquidacionController extends Controller
@@ -70,5 +71,17 @@ class LiquidacionController extends Controller
         return response()->json([
             'message' => 'Liquidación eliminada satisfactoriamente'
         ], 200);
+    }
+
+    /**
+     * Se detalla la liquidación en un PDF
+     */
+    public function viewToPdf(Liquidacion $liquidacion)
+    {
+        $data = LiquidacionResource::make($liquidacion)->toArray(request());
+
+        $pdf = Pdf::loadView('pdf.recibo', compact('data'));
+
+        return $pdf->stream('recibo_' . $data['empleado']['legajo'] . '_' . $data['periodo'] . '.pdf');
     }
 }

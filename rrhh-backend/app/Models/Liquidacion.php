@@ -43,6 +43,25 @@ class Liquidacion extends Model
 
     }
 
+    public function getTotalRemunerativosAttribute(): float
+    {
+        return $this->liquidacionConceptos()->whereHas('concepto', function($query) {
+            $query->whereIn('tipo', ['remunerativo']);
+        })->sum('importe');
+    }
+
+    public function getTotalNoRemunerativosAttribute(): float
+    {
+        return $this->liquidacionConceptos()->whereHas('concepto', function($query) {
+            $query->whereIn('tipo', ['descuento']);
+        })->sum('importe');
+    }
+
+    public function getTotalLiquidoAttribute(): float
+    {
+        return $this->total_remunerativos - $this->total_no_remunerativos;
+    }
+
     /**
      * Obtiene el empleado de este registro
      */
