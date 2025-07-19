@@ -130,8 +130,8 @@ class LiquidacionService
         $this->crearRemunerativo($liquidacion, $periodo, '002');
         //concepto adicional por titulo
         $this->crearRemunerativo($liquidacion, $periodo, '003');
-        //concepto adicional por antiguedad
-        $this->crearRemunerativo($liquidacion, $periodo, '004');
+
+        $liquidacion->calcularConceptoAntiguedad();
         //concepto adicional por zona
         $this->crearRemunerativo($liquidacion, $periodo, '005');
     }

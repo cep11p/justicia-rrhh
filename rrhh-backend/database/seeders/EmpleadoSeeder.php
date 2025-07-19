@@ -21,30 +21,35 @@ class EmpleadoSeeder extends Seeder
                 'fecha_ingreso' => '2020-01-15',
                 'legajo' => 'L001',
                 'titulo' => 'universitario',
+                'pre_antiguedad' => 0,
             ],
             [
                 'cuil' => '20234567890',
                 'fecha_ingreso' => '2021-03-20',
                 'legajo' => 'L002',
                 'titulo' => 'terciario',
+                'pre_antiguedad' => 2,
             ],
             [
                 'cuil' => '20345678901',
                 'fecha_ingreso' => '2019-08-10',
                 'legajo' => 'L003',
                 'titulo' => 'secundario',
+                'pre_antiguedad' => 3,
             ],
             [
                 'cuil' => '20456789012',
                 'fecha_ingreso' => '2022-01-05',
                 'legajo' => 'L004',
                 'titulo' => 'universitario',
+                'pre_antiguedad' => 5,
             ],
             [
                 'cuil' => '20567890123',
                 'fecha_ingreso' => '2020-11-30',
                 'legajo' => 'L005',
                 'titulo' => 'terciario',
+                'pre_antiguedad' => 0,
             ],
 
             // Empleados 6-10: Recursos Humanos
@@ -53,30 +58,35 @@ class EmpleadoSeeder extends Seeder
                 'fecha_ingreso' => '2018-06-15',
                 'legajo' => 'L006',
                 'titulo' => 'universitario',
+                'pre_antiguedad' => 6,
             ],
             [
                 'cuil' => '20789012345',
                 'fecha_ingreso' => '2021-09-22',
                 'legajo' => 'L007',
                 'titulo' => 'secundario',
+                'pre_antiguedad' => 7,
             ],
             [
                 'cuil' => '20890123456',
                 'fecha_ingreso' => '2019-12-01',
                 'legajo' => 'L008',
                 'titulo' => 'universitario',
+                'pre_antiguedad' => 0,
             ],
             [
                 'cuil' => '20901234567',
                 'fecha_ingreso' => '2022-04-18',
                 'legajo' => 'L009',
                 'titulo' => 'terciario',
+                'pre_antiguedad' => 8
             ],
             [
                 'cuil' => '20112345678',
                 'fecha_ingreso' => '2020-07-08',
                 'legajo' => 'L010',
                 'titulo' => 'secundario',
+                'pre_antiguedad' => 0,
             ],
         ];
 
@@ -88,6 +98,7 @@ class EmpleadoSeeder extends Seeder
                     'fecha_ingreso' => $empleado['fecha_ingreso'],
                     'legajo' => $empleado['legajo'],
                     'titulo' => $empleado['titulo'],
+                    'pre_antiguedad' => $empleado['pre_antiguedad'],
                 ]);
             }
         }

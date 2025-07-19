@@ -37,6 +37,11 @@ class Liquidacion extends Model
         return $this->belongsTo(Empleado::class);
     }
 
+    public function liquidacionConceptos(): HasMany
+    {
+        return $this->hasMany(LiquidacionConcepto::class);
+    }
+
     /**
      * Genera el siguiente número de liquidación
      */
@@ -44,6 +49,28 @@ class Liquidacion extends Model
     {
         $ultimoNumero = self::max('numero') ?? 0;
         return $ultimoNumero + 1;
+    }
+
+    public function calcularConceptoAntiguedad(): void
+    {
+        $importe = $this->liquidacionConceptos()
+            ->whereHas('concepto', function($query) {
+                $query->whereIn('codigo', ['001', '002', '003']);
+            })
+            ->sum('importe');
+
+
+        $concepto = Concepto::where('codigo', '004')->first();
+        $valor_concepto = $concepto->valorConcepto($this->periodo)->valor / 100;
+        $valor_concepto = $valor_concepto * $this->empleado->antiguedad;
+
+        $liquidacion_concepto_atributos = [
+            'liquidacion_id' => $this->id,
+            'concepto_id' => $concepto->id,
+            'importe' => $importe * $valor_concepto,
+        ];
+        LiquidacionConcepto::create($liquidacion_concepto_atributos);
+
     }
 
 }

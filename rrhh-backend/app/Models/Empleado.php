@@ -20,12 +20,14 @@ class Empleado extends Model
         'fecha_ingreso',
         'legajo',
         'titulo',
+        'pre_antiguedad',
     ];
 
     protected $casts = [
         'fecha_ingreso' => 'date',
         'legajo' => 'string',
         'titulo' => 'string',
+        'pre_antiguedad' => 'integer',
     ];
 
     /**
@@ -58,6 +60,11 @@ class Empleado extends Model
     public function getNombreCompletoAttribute(): string
     {
         return $this->persona->nombre_completo ?? '';
+    }
+
+    public function getAntiguedadAttribute(): int
+    {
+        return $this->fecha_ingreso->diffInYears(now()) + $this->pre_antiguedad;
     }
 
     /**
