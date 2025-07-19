@@ -18,11 +18,7 @@ class LiquidacionResource extends JsonResource
             'id' => $this->id,
             'numero' => $this->numero,
             'periodo' => $this->periodo,
-            'empleado' => $this->whenLoaded('liquidacionEmpleados', function () {
-                // asume que eager‐loadeaste la relación 'empleado' en LiquidacionEmpleado
-                $empleados = $this->liquidacionEmpleados->pluck('empleado');
-                return EmpleadoResource::collection($empleados);
-            }),
+            'empleado' => $this->empleado,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

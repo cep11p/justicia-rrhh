@@ -49,7 +49,7 @@ class Empleado extends Model
      */
     public function liquidaciones(): HasMany
     {
-        return $this->hasMany(LiquidacionEmpleado::class);
+        return $this->hasMany(Liquidacion::class);
     }
 
     /**

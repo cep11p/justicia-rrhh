@@ -39,24 +39,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Recrear la tabla si es necesario
-        Schema::create('liquidacion_empleados', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('empleado_id')->constrained('empleados');
-            $table->foreignId('liquidacion_id')->constrained('liquidaciones');
-            $table->timestamps();
-        });
 
-        // Restaurar la estructura anterior de liquidacion_conceptos
-        Schema::table('liquidacion_conceptos', function (Blueprint $table) {
-            $table->dropForeign(['liquidacion_id']);
-            $table->dropColumn('liquidacion_id');
-            $table->foreignId('liquidacion_empleado_id')->constrained('liquidacion_empleados');
-        });
-
-        Schema::table('liquidaciones', function (Blueprint $table) {
-            $table->dropForeign(['empleado_id']);
-            $table->dropColumn('empleado_id');
-        });
     }
 };
