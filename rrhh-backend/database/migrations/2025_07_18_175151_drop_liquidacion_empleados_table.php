@@ -30,6 +30,7 @@ return new class extends Migration
 
         Schema::table('liquidaciones', function (Blueprint $table) {
             $table->foreignId('empleado_id')->constrained('empleados')->onDelete('cascade');
+            $table->index('empleado_id');
         });
 
     }
