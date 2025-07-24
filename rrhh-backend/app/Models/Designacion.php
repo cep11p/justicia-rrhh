@@ -211,7 +211,7 @@ class Designacion extends Model
         $periodo = $periodo_fecha_inicio->format('Ym');
         $valorConcepto = ValorConcepto::where('concepto_id', $conceptoSalarioBasico->id)
             ->where('cargo_id', $this->cargo_id)
-            ->where('periodo', $periodo)
+            ->byPeriodo($periodo)
             ->where('fecha_inicio', '<=', $periodo_fecha_inicio)
             ->where(function($query) use ($periodo_fecha_fin) {
                 $query->where('fecha_fin', '>=', $periodo_fecha_fin)
