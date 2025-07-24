@@ -86,6 +86,9 @@ class Liquidacion extends Model
 
     public function calcularConceptoAntiguedad(): void
     {
+        // Esta suma el importe de los conceptos de liquidación cuyo código es '001', '002' o '003'.
+        // Normalmente, estos códigos corresponden a conceptos como "Básico", "Adicional por función" y "Adicional por título".
+        // Es decir, está sumando el total de los importes de esos conceptos para esta liquidación.
         $importe = $this->liquidacionConceptos()
             ->whereHas('concepto', function($query) {
                 $query->whereIn('codigo', ['001', '002', '003']);
@@ -96,6 +99,7 @@ class Liquidacion extends Model
         $concepto = Concepto::where('codigo', '004')->first();
         $valor_concepto = $concepto->valorConcepto($this->periodo)->valor / 100;
         $valor_concepto = $valor_concepto * $this->empleado->antiguedad;
+
 
         $liquidacion_concepto_atributos = [
             'liquidacion_id' => $this->id,

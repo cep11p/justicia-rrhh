@@ -64,7 +64,8 @@ class Empleado extends Model
 
     public function getAntiguedadAttribute(): int
     {
-        return $this->fecha_ingreso->diffInYears(now()) + $this->pre_antiguedad;
+        $total = $this->fecha_ingreso->diffInYears(now()) + $this->pre_antiguedad;
+        return ($total > 0) ? $total : 0;
     }
 
     /**
