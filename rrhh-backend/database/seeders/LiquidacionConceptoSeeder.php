@@ -41,7 +41,7 @@ class LiquidacionConceptoSeeder extends Seeder
             // Calcular BÁSICO
             $valorBasico = ValorConcepto::where('concepto_id', $conceptos['001']->id)
                 ->where('cargo_id', $cargo->id)
-                ->where('periodo', $periodo)
+                ->byPeriodo($periodo)
                 ->first();
 
             if ($valorBasico) {
@@ -58,7 +58,7 @@ class LiquidacionConceptoSeeder extends Seeder
                 // Calcular ADICIONAL POR FUNCIÓN (5% del básico si tiene función)
                 if ($cargo->tiene_funcion) {
                     $valorFuncion = ValorConcepto::where('concepto_id', $conceptos['002']->id)
-                        ->where('periodo', $periodo)
+                        ->byPeriodo($periodo)
                         ->first();
 
                     if ($valorFuncion) {
@@ -75,7 +75,7 @@ class LiquidacionConceptoSeeder extends Seeder
                 // Calcular ADICIONAL POR TÍTULO
                 if ($empleado->titulo) {
                     $valorTitulo = ValorConcepto::where('concepto_id', $conceptos['003']->id)
-                        ->where('periodo', $periodo)
+                        ->byPeriodo($periodo)
                         ->first();
 
                     if ($valorTitulo) {
@@ -91,7 +91,7 @@ class LiquidacionConceptoSeeder extends Seeder
 
                 // Calcular ANTIGÜEDAD (2% anual)
                 $valorAntiguedad = ValorConcepto::where('concepto_id', $conceptos['004']->id)
-                    ->where('periodo', $periodo)
+                    ->byPeriodo($periodo)
                     ->first();
 
                 if ($valorAntiguedad) {
@@ -114,7 +114,7 @@ class LiquidacionConceptoSeeder extends Seeder
 
                 // Calcular ZONA (40% de la suma)
                 $valorZona = ValorConcepto::where('concepto_id', $conceptos['005']->id)
-                    ->where('periodo', $periodo)
+                    ->byPeriodo($periodo)
                     ->first();
 
                 if ($valorZona) {
@@ -155,7 +155,7 @@ class LiquidacionConceptoSeeder extends Seeder
 
                 // APORTE JUBILATORIO (11%)
                 $valorJubilacion = ValorConcepto::where('concepto_id', $conceptos['007']->id)
-                    ->where('periodo', $periodo)
+                    ->byPeriodo($periodo)
                     ->first();
 
                 if ($valorJubilacion) {
@@ -170,7 +170,7 @@ class LiquidacionConceptoSeeder extends Seeder
 
                 // OBRA SOCIAL (4%)
                 $valorObraSocial = ValorConcepto::where('concepto_id', $conceptos['008']->id)
-                    ->where('periodo', $periodo)
+                    ->byPeriodo($periodo)
                     ->first();
 
                 if ($valorObraSocial) {
