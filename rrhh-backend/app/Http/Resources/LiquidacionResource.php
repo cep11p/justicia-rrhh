@@ -23,7 +23,7 @@ class LiquidacionResource extends JsonResource
             'no_remunerativos' => LiquidacionConceptoResource::collection($this->conceptosNoRemunerativos),
             'total_remunerativos' => $this->total_remunerativos,
             'total_no_remunerativos' => $this->total_no_remunerativos,
-            'total_liquido' => $this->total_liquido,
+            'total_liquidado' => $this->total_liquidado,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
