@@ -60,6 +60,13 @@ class DesignacionSeeder extends Seeder
                 'estructura' => $administracion,
                 'cargo' => $adminAsistente,
                 'fecha_inicio' => '2022-01-05',
+                'fecha_fin' => '2023-01-14',
+            ],
+            [
+                'empleado_cuil' => '20456789012',
+                'estructura' => $administracion,
+                'cargo' => $adminAsistente,
+                'fecha_inicio' => '2023-01-15',
                 'fecha_fin' => null,
             ],
             // Empleado 5: Administrativo Senior
@@ -67,9 +74,17 @@ class DesignacionSeeder extends Seeder
                 'empleado_cuil' => '20567890123',
                 'estructura' => $administracion,
                 'cargo' => $adminSenior,
-                'fecha_inicio' => '2020-11-30',
+                'fecha_inicio' => '2022-01-05',
+                'fecha_fin' => '2023-01-14',
+            ],
+            [
+                'empleado_cuil' => '20567890123',
+                'estructura' => $administracion,
+                'cargo' => $adminAsistente,
+                'fecha_inicio' => '2023-01-15',
                 'fecha_fin' => null,
             ],
+
 
             // Designaciones para Recursos Humanos (empleados 6-10)
             // Empleado 6: Analista de RRHH
