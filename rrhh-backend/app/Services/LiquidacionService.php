@@ -80,6 +80,31 @@ class LiquidacionService
         });
     }
 
+    /**
+     * Obtiene un listado paginado de liquidaciones según los filtros proporcionados.
+     *
+     * Este método permite filtrar las liquidaciones por período, nombre completo de la persona,
+     * CUIL y legajo del empleado. Devuelve las liquidaciones junto con la información de la persona asociada.
+     *
+     * @param \Illuminate\Http\Request $request
+     *      Parámetros de filtro disponibles:
+     *          - periodo: string (opcional) - Filtra por el período de la liquidación (formato YYYYMM).
+     *          - persona_fullname: string (opcional) - Filtra por el nombre completo de la persona asociada al empleado.
+     *          - cuil: string (opcional) - Filtra por el CUIL del empleado.
+     *          - legajo: string (opcional) - Filtra por el legajo del empleado.
+     * @return \Illuminate\Database\Eloquent\Collection
+     *      Colección de liquidaciones con la relación 'empleado.persona' cargada.
+     *
+     * @example
+     * // Obtener todas las liquidaciones del período 202401
+     * $request = new Request(['periodo' => '202401']);
+     * $liquidaciones = $liquidacionService->list($request);
+     *
+     * @example
+     * // Buscar liquidaciones por nombre de persona
+     * $request = new Request(['persona_fullname' => 'Juan Pérez']);
+     * $liquidaciones = $liquidacionService->list($request);
+     */
     public function list(Request $request){
 
         $query = Liquidacion::query();

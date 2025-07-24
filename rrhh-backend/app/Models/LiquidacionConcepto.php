@@ -66,6 +66,10 @@ class LiquidacionConcepto extends Model
         return $this->hasMany(LiquidacionConcepto::class, 'padre_id');
     }
 
+    /**
+     * Obtiene los conceptos remunerativos de la liquidación
+     * @return HasMany
+     */
     public function scopeConRemunerativos($query)
     {
         return $query->whereHas('concepto', fn($q) => $q->where('tipo', 'Remunerativo'));

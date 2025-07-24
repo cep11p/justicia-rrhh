@@ -53,7 +53,7 @@
             background: #f7f7f7;
             font-weight: bold;
         }
-        .liquido {
+        .liquidado {
             font-size: 16px;
             background: #e6ffe6;
             font-weight: bold;
@@ -137,8 +137,8 @@
         </tbody>
     </table>
 
-    <div class="liquido">
-        Neto a cobrar: ${{ number_format($data['total_liquido'], 2, ',', '.') }}
+    <div class="liquidado">
+        Neto a cobrar: ${{ number_format($data['total_liquidado'], 2, ',', '.') }}
     </div>
 
 </body>
