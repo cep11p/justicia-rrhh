@@ -20,6 +20,8 @@ class LiquidacionController extends Controller
     }
     /**
      * Display a listing of the resource.
+     * @param Request $request
+     * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
@@ -35,6 +37,8 @@ class LiquidacionController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     * @param LiquidacionStoreRequest $request
+     * @return \Illuminate\Http\Response
      */
     public function store(LiquidacionStoreRequest $request)
     {
@@ -48,6 +52,8 @@ class LiquidacionController extends Controller
 
     /**
      * Display the specified resource.
+     * @param Liquidacion $liquidacion
+     * @return \Illuminate\Http\Response
      */
     public function show(Liquidacion $liquidacion)
     {
@@ -56,6 +62,9 @@ class LiquidacionController extends Controller
 
     /**
      * Update the specified resource in storage.
+     * @param Request $request
+     * @param string $id
+     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, string $id)
     {
@@ -64,6 +73,8 @@ class LiquidacionController extends Controller
 
     /**
      * Remove the specified resource from storage.
+     * @param Liquidacion $liquidacion
+     * @return \Illuminate\Http\Response
      */
     public function delete(Liquidacion $liquidacion)
     {
@@ -75,6 +86,8 @@ class LiquidacionController extends Controller
 
     /**
      * Se detalla la liquidación en un PDF
+     * @param Liquidacion $liquidacion
+     * @return \Illuminate\Http\Response
      */
     public function viewToPdf(Liquidacion $liquidacion)
     {

@@ -85,7 +85,7 @@ class Concepto extends Model
     public function valorConcepto(string $periodo): ?ValorConcepto
     {
         return $this->valorConceptos()
-            ->where('periodo', $periodo)
+            ->byPeriodo($periodo)
             ->first();
     }
 

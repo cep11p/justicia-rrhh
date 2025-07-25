@@ -43,6 +43,10 @@ class Liquidacion extends Model
 
     }
 
+    /**
+     * Obtiene el total de los conceptos remunerativos de la liquidación
+     * @return float
+     */
     public function getTotalRemunerativosAttribute(): float
     {
         return $this->liquidacionConceptos()->whereHas('concepto', function($query) {
@@ -50,6 +54,10 @@ class Liquidacion extends Model
         })->sum('importe');
     }
 
+    /**
+     * Obtiene el total de los conceptos no remunerativos de la liquidación
+     * @return float
+     */
     public function getTotalNoRemunerativosAttribute(): float
     {
         return $this->liquidacionConceptos()->whereHas('concepto', function($query) {
@@ -57,19 +65,28 @@ class Liquidacion extends Model
         })->sum('importe');
     }
 
-    public function getTotalLiquidoAttribute(): float
+    /**
+     * Obtiene el total líquido de la liquidación
+     * @return float
+     */
+    public function getTotalLiquidadoAttribute(): float
     {
         return $this->total_remunerativos - $this->total_no_remunerativos;
     }
 
     /**
      * Obtiene el empleado de este registro
+     * @return BelongsTo
      */
     public function empleado(): BelongsTo
     {
         return $this->belongsTo(Empleado::class);
     }
 
+    /**
+     * Obtiene los conceptos de la liquidación
+     * @return HasMany
+     */
     public function liquidacionConceptos(): HasMany
     {
         return $this->hasMany(LiquidacionConcepto::class);
@@ -77,6 +94,7 @@ class Liquidacion extends Model
 
     /**
      * Genera el siguiente número de liquidación
+     * @return int
      */
     public static function generarSiguienteNumero(): int
     {
@@ -84,8 +102,15 @@ class Liquidacion extends Model
         return $ultimoNumero + 1;
     }
 
+    /**
+     * Calcula el concepto de antigüedad
+     * @return void
+     */
     public function calcularConceptoAntiguedad(): void
     {
+        // Esta suma el importe de los conceptos de liquidación cuyo código es '001', '002' o '003'.
+        // Normalmente, estos códigos corresponden a conceptos como "Básico", "Adicional por función" y "Adicional por título".
+        // Es decir, está sumando el total de los importes de esos conceptos para esta liquidación.
         $importe = $this->liquidacionConceptos()
             ->whereHas('concepto', function($query) {
                 $query->whereIn('codigo', ['001', '002', '003']);
@@ -97,6 +122,7 @@ class Liquidacion extends Model
         $valor_concepto = $concepto->valorConcepto($this->periodo)->valor / 100;
         $valor_concepto = $valor_concepto * $this->empleado->antiguedad;
 
+
         $liquidacion_concepto_atributos = [
             'liquidacion_id' => $this->id,
             'concepto_id' => $concepto->id,
@@ -106,6 +132,10 @@ class Liquidacion extends Model
 
     }
 
+    /**
+     * Obtiene los conceptos remunerativos de la liquidación
+     * @return HasMany
+     */
     public function conceptosRemunerativos()
     {
         return $this->liquidacionConceptos()->whereHas('concepto', function($query) {
@@ -113,6 +143,10 @@ class Liquidacion extends Model
         });
     }
 
+    /**
+     * Obtiene los conceptos no remunerativos de la liquidación
+     * @return HasMany
+     */
     public function conceptosNoRemunerativos()
     {
         return $this->liquidacionConceptos()->whereHas('concepto', function($query) {

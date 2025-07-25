@@ -16,7 +16,6 @@ class ValorConceptoResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'periodo' => $this->periodo,
             'valor' => $this->valor,
             'concepto_id' => $this->concepto_id,
             'cargo_id' => $this->cargo_id,

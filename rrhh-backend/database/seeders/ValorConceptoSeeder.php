@@ -66,7 +66,7 @@ class ValorConceptoSeeder extends Seeder
                 'concepto_id' => $conceptos['002']->id,
                 'cargo_id' => null,
                 'valor' => 5,
-                'fecha_inicio' => '2024-01-01',
+                'fecha_inicio' => '2022-01-01',
                 'fecha_fin' => null,
             ],
             // ADICIONAL POR TÍTULO: 10% del básico
@@ -74,7 +74,7 @@ class ValorConceptoSeeder extends Seeder
                 'concepto_id' => $conceptos['003']->id,
                 'cargo_id' => null,
                 'valor' => 10,
-                'fecha_inicio' => '2024-01-01',
+                'fecha_inicio' => '2022-01-01',
                 'fecha_fin' => null,
             ],
             // ANTIGÜEDAD: 2% anual
@@ -82,7 +82,7 @@ class ValorConceptoSeeder extends Seeder
                 'concepto_id' => $conceptos['004']->id,
                 'cargo_id' => null,
                 'valor' => 2,
-                'fecha_inicio' => '2024-01-01',
+                'fecha_inicio' => '2022-01-01',
                 'fecha_fin' => null,
             ],
             // ZONA: 40% de la suma
@@ -90,7 +90,7 @@ class ValorConceptoSeeder extends Seeder
                 'concepto_id' => $conceptos['005']->id,
                 'cargo_id' => null,
                 'valor' => 40,
-                'fecha_inicio' => '2024-01-01',
+                'fecha_inicio' => '2022-01-01',
                 'fecha_fin' => null,
             ],
             // APORTE JUBILATORIO: 11% del total remunerativo
@@ -98,7 +98,7 @@ class ValorConceptoSeeder extends Seeder
                 'concepto_id' => $conceptos['007']->id,
                 'cargo_id' => null,
                 'valor' => 11,
-                'fecha_inicio' => '2024-01-01',
+                'fecha_inicio' => '2022-01-01',
                 'fecha_fin' => null,
             ],
             // OBRA SOCIAL: 4% del total remunerativo
@@ -106,7 +106,7 @@ class ValorConceptoSeeder extends Seeder
                 'concepto_id' => $conceptos['008']->id,
                 'cargo_id' => null,
                 'valor' => 4,
-                'fecha_inicio' => '2024-01-01',
+                'fecha_inicio' => '2022-01-01',
                 'fecha_fin' => null,
             ],
         ];
