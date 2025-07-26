@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Registrar middleware personalizado
         $middleware->alias([
             'verifyKeycloakToken' => \App\Http\Middleware\VerifyKeycloakToken::class,
+            'checkKeycloakRole' => \App\Http\Middleware\CheckKeycloakRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
