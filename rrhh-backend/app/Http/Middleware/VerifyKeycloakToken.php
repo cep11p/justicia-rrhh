@@ -38,10 +38,9 @@ class VerifyKeycloakToken
             // Buscar la clave correspondiente (kid)
             $keyData = collect($keys)->firstWhere('kid', $kid);
 
-
             $signingKeys = collect([$keyData]);
 
-            // 3. Intentar verificar el token con todas las claves disponibles
+            // 3. Intentar verificar el token con la clave específica
             $decoded = null;
             $lastError = null;
 
