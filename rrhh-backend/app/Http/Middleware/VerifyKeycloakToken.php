@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use App\Models\GenericUser;
 
 class VerifyKeycloakToken
 {
@@ -33,31 +35,11 @@ class VerifyKeycloakToken
             $header = json_decode(base64_decode(explode('.', $token)[0]), true);
             $kid = $header['kid'];
 
-            // Debug: mostrar el kid del token
-            // Log::info('Token verification attempt', [
-            //     'token_kid' => $kid,
-            //     'available_kids' => collect($keys)->pluck('kid')->toArray(),
-            //     'token_header' => $header
-            // ]);
-
             // Buscar la clave correspondiente (kid)
             $keyData = collect($keys)->firstWhere('kid', $kid);
 
-            // Si no encontramos la clave específica, intentar con todas las claves de firma disponibles
-            // if (!$keyData) {
-            //     Log::warning('Specific key not found, trying with all available signing keys', [
-            //         'token_kid' => $kid,
-            //         'available_signing_keys' => collect($keys)->where('use', 'sig')->pluck('kid')->toArray()
-            //     ]);
 
-            //     $signingKeys = collect($keys)->where('use', 'sig');
-            //     if ($signingKeys->isEmpty()) {
-            //         return response()->json(['error' => 'No signing keys available'], 401);
-            //     }
-            // } else {
-                // dd($keyData);
-                $signingKeys = collect([$keyData]);
-            // }
+            $signingKeys = collect([$keyData]);
 
             // 3. Intentar verificar el token con todas las claves disponibles
             $decoded = null;
@@ -113,9 +95,35 @@ class VerifyKeycloakToken
             // Podés usar info del token si querés
             $request->attributes->add(['token_decoded' => (array) $decoded]);
 
+            // Extraer claims del token decodificado
+            $claims = (array) $decoded;
+
         } catch (\Throwable $e) {
             return response()->json(['error' => 'Token inválido', 'details' => $e->getMessage()], 401);
         }
+
+        // Crear y establecer el usuario autenticado
+        $user = new GenericUser([
+            'id'                    => $claims['sub'],
+            'email'                 => $claims['email'] ?? null,
+            'name'                  => $claims['name'] ?? null,
+            'given_name'            => $claims['given_name'] ?? null,
+            'family_name'           => $claims['family_name'] ?? null,
+            'preferred_username'    => $claims['preferred_username'] ?? null,
+            'email_verified'        => $claims['email_verified'] ?? false,
+            'realm_roles'           => $claims['realm_access']->roles ?? [],
+            'resource_roles'        => (array) $claims['resource_access'],
+            'scope'                 => $claims['scope'] ?? '',
+            'client_id'             => $claims['azp'] ?? null,
+        ]);
+
+        // Establecer el usuario en el request para acceso posterior
+        $request->setUserResolver(function () use ($user) {
+            return $user;
+        });
+
+        // También establecer en el guard web para compatibilidad
+        Auth::guard('web')->setUser($user);
 
         return $next($request);
     }
