@@ -1,70 +1,3 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
-
-## About Laravel
-
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-
 ## **Estructura para la Presentación:**
 
 ### **2 Estructuras Organizacionales:**
@@ -89,29 +22,133 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
   - 2 Analistas de RRHH
   - 3 Asistentes de RRHH
 
-### **Comandos para Probar:**
+## **Despliegue Inicial del Proyecto**
 
-```bash
-# Ejecutar todo el ciclo
-docker compose exec app php artisan migrate:fresh --seed
+### **1. Requisitos Previos**
+- Docker y Docker Compose instalados en tu máquina.
+- Puertos disponibles: **9080** (Nginx), **9081** (Keycloak), **3390** (MariaDB).
 
-# Verificar la estructura
-docker compose exec app php artisan tinker --execute="
-echo 'ESTRUCTURAS ORGANIZACIONALES:' . PHP_EOL;
-App\Models\EstructuraOrganizativa::all()->each(function(\$e) {
-    echo '- ' . \$e->nombre . ' (ID: ' . \$e->id . ')' . PHP_EOL;
-});
+### **2. Levantar los Servicios con Docker Compose**
 
-echo PHP_EOL . 'CARGOS:' . PHP_EOL;
-App\Models\Cargo::with('estructuraOrganizativa')->get()->each(function(\$c) {
-    echo '- ' . \$c->nombre . ' -> ' . \$c->estructuraOrganizativa->nombre . ' (ID: ' . \$c->id . ')' . PHP_EOL;
-});
+Ejecuta el siguiente comando para construir y levantar los contenedores en segundo plano:
+docker compose up --build -d
 
-echo PHP_EOL . 'EMPLEADOS:' . PHP_EOL;
-App\Models\Empleado::with(['persona', 'cargo.estructuraOrganizativa'])->get()->each(function(\$e) {
-    echo '- ' . \$e->persona->nombre . ' ' . \$e->persona->apellido . ' -> ' . \$e->cargo->nombre . ' (' . \$e->cargo->estructuraOrganizativa->nombre . ')' . PHP_EOL;
-});
-"
-```
+### **3. Obtener IP de la Base de Datos**
 
-¿Quieres que ejecute estos comandos para verificar que todo está funcionando correctamente?
+Obtén la IP de Gateway de la base de datos para configurar el archivo .env:
+docker inspect justicia-db | grep Gateway
+# Copia la IP que aparece en "Gateway"
+
+### **4. Configurar Archivo .env**
+
+Copia el archivo de ejemplo y configúralo:
+cp .env.example .env
+
+**Configuración mínima en `.env`:**env
+APP_NAME="Justicia RRHH"
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost:9080
+
+DB_CONNECTION=mysql
+DB_HOST=<IP_DE_GATEWAY_OBTENIDA_EN_PASO_3>
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=laravel
+DB_PASSWORD=secret
+
+### **5. Instalar Dependencias de PHP**
+
+docker compose exec app composer install
+
+### **6. Generar Clave de Aplicación**
+
+docker compose exec app php artisan key:generate
+
+### **7. Configurar Permisos de Storage**
+
+docker compose exec app chmod -R 775 storage bootstrap/cache
+
+### **8. Ejecutar Migraciones y Seeders**
+
+docker compose exec app php artisan migrate --seed
+
+### **9. Verificar Keycloak**
+
+1. Acceder a http://localhost:9081
+2. Login con `admin` / `admin`
+3. Verificar que el realm `poder-judicial-rn` existe
+4. Verificar que los usuarios de prueba están disponibles:
+   - `admin` / `admin123` (rol: realm-admin)
+   - `rrhh_user` / `rrhh123` (rol: uma_authorization)
+
+### **10. Verificar que Todo Funciona**
+
+- **Aplicación**: http://localhost:9080
+- **API**: http://localhost:9080/api
+- **Keycloak**: http://localhost:9081
+- **Base de datos**: localhost:3390
+
+## **Comandos Útiles**
+
+### **Gestión de Servicios**
+# Ver logs
+docker compose logs -f
+
+# Parar servicios
+docker compose down
+
+# Reiniciar un servicio específico
+docker compose restart keycloak
+
+### **Laravel**
+# Ejecutar comandos artisan
+docker compose exec app php artisan <comando>
+
+# Limpiar cache
+docker compose exec app php artisan cache:clear
+docker compose exec app php artisan config:clear
+
+# Ejecutar tests
+docker compose exec app php artisan test
+
+### **Base de Datos**
+# Acceder a MariaDB
+docker compose exec db mysql -u laravel -p laravel
+
+# Hacer backup
+docker compose exec db mysqldump -u laravel -p laravel > backup.sql
+
+## **Troubleshooting**
+
+### **Problemas Comunes**
+
+1. **Error de conexión a BD**: Verificar IP de Gateway en `.env`
+2. **Permisos de storage**: Ejecutar `chmod -R 775 storage`
+3. **Keycloak no importa usuarios**: Verificar archivo `keycloak-data/realm-export.json`
+4. **Puertos ocupados**: Cambiar puertos en `docker-compose.yml`
+
+### **Logs Útiles**
+# Logs de Laravel
+docker compose exec app tail -f storage/logs/laravel.log
+
+# Logs de Keycloak
+docker compose logs keycloak
+
+# Logs de MariaDB
+docker compose logs db
+
+## **Autenticación**
+
+El sistema usa Keycloak para autenticación con:
+- **Realm**: `poder-judicial-rn`
+- **Cliente**: `recursos-humanos`
+- **Protocolo**: OpenID Connect
+
+### **Usuarios de Prueba**
+- **admin** / **admin123** (Administrador)
+- **rrhh_user** / **rrhh123** (Usuario RRHH)
+
+    
+
