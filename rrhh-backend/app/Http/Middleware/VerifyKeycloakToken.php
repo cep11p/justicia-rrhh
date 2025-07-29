@@ -111,7 +111,7 @@ class VerifyKeycloakToken
             'preferred_username'    => $claims['preferred_username'] ?? null,
             'email_verified'        => $claims['email_verified'] ?? false,
             'realm_roles'           => $claims['realm_access']->roles ?? [],
-            'resource_roles'        => (array) $claims['resource_access'],
+            // 'resource_roles'        => (array) $claims['resource_access'],
             'scope'                 => $claims['scope'] ?? '',
             'client_id'             => $claims['azp'] ?? null,
         ]);
