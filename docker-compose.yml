@@ -12,14 +12,11 @@ services:
   frontend:
     build:
       context: ./rrhh-frontend
+      dockerfile: Dockerfile
     container_name: justicia-rrhh-frontend
     ports:
-      - "9083:5173"
-    volumes:
-      - ./rrhh-frontend:/app
-    depends_on:
-      - app
-      - keycloak
+      - "9082:80" 
+    restart: always
 
   web:
     image: nginx:alpine
