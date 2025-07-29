@@ -1,5 +1,15 @@
 import { createApp } from 'vue'
-import './style.css'
 import App from './App.vue'
+import keycloak from './keycloak'
 
-createApp(App).mount('#app')
+const app = createApp(App)
+
+keycloak.init({ onLoad: 'login-required' }).then(authenticated => {
+  if (authenticated) {
+    console.log("✅ Usuario autenticado:", keycloak.tokenParsed)
+    app.config.globalProperties.$keycloak = keycloak
+    app.mount('#app')
+  } else {
+    console.warn("❌ Usuario no autenticado")
+  }
+})
