@@ -113,9 +113,13 @@ class LiquidacionService
             $query->where('periodo', $request->periodo);
         }
 
-        if ($request->has('persona_fullname')) {
+        if ($request->has('global_search')) {
             $query->whereHas('empleado.persona', function($query) use ($request) {
-                $query->where('fullname', 'like', '%' . $request->persona_fullname . '%');
+                $query->where('nombre', 'like', '%' . $request->global_search . '%')
+                ->orWhere('apellido', 'like', '%' . $request->global_search . '%')
+                ->orWhere('cuil', 'like', '%' . $request->global_search . '%')
+                ->orWhere('legajo', 'like', '%' . $request->global_search . '%')
+                ->orWhere('periodo', 'like', '%' . $request->global_search . '%');
             });
         }
         if ($request->has('cuil')) {
