@@ -9,6 +9,18 @@ services:
     depends_on:
       - db
 
+  frontend:
+    build:
+      context: ./rrhh-frontend
+    container_name: justicia-rrhh-frontend
+    ports:
+      - "9083:5173"
+    volumes:
+      - ./rrhh-frontend:/app
+    depends_on:
+      - app
+      - keycloak
+
   web:
     image: nginx:alpine
     container_name: nginx
