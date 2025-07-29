@@ -13,3 +13,10 @@ keycloak.init({ onLoad: 'login-required' }).then(authenticated => {
     console.warn("❌ Usuario no autenticado")
   }
 })
+
+setInterval(() => {
+    keycloak.updateToken(30).catch(() => {
+      keycloak.login()
+    })
+}, 20000) // cada 20 segundos
+  
