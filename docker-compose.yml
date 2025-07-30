@@ -14,9 +14,12 @@ services:
       context: ./rrhh-frontend
       dockerfile: Dockerfile
     container_name: justicia-rrhh-frontend
+    volumes:
+      - ./rrhh-frontend:/app
     ports:
-      - "9082:80" 
-    restart: always
+      - "5173:5173"
+    command: ["npm", "run", "dev", "--", "--host", "--port", "5173"]
+
 
   web:
     image: nginx:alpine
