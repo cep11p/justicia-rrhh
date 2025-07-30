@@ -1,7 +1,8 @@
-<script setup>
-import Liquidaciones from './components/Liquidaciones.vue'
-</script>
-
 <template>
-  <Liquidaciones />
+  <div>
+    <nav>
+      <router-link to="/liquidaciones">Liquidaciones</router-link>
+    </nav>
+    <router-view />
+  </div>
 </template>
