@@ -1,50 +1,79 @@
 <template>
-  <div class="p-4">
+  
+  <div class="p-6 bg-gray-50 min-h-screen">
+    <!-- Título -->
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">
+      Listado de Liquidaciones
+    </h2>
+
     <!-- Buscador -->
-    <input
-      v-model="globalSearch"
-      @input="buscar"
-      type="text"
-      placeholder="Buscar liquidación (nombre, apellido, cuil, período...)"
-      class="border px-2 py-1 rounded mb-3 w-full"
-    />
+    <div class="mb-4">
+      <input
+        v-model="globalSearch"
+        @input="buscar"
+        type="text"
+        placeholder="Buscar liquidación (nombre, apellido, CUIL, período...)"
+        class="w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+      />
+    </div>
 
     <!-- Tabla -->
-    <table class="table-auto w-full border-collapse border border-gray-300">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="border px-4 py-2">ID</th>
-          <th class="border px-4 py-2">Período</th>
-          <th class="border px-4 py-2">Empleado</th>
-          <th class="border px-4 py-2">CUIL</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="liq in liquidaciones" :key="liq.id">
-          <td class="border px-4 py-2">{{ liq.id }}</td>
-          <td class="border px-4 py-2">{{ liq.periodo }}</td>
-          <td class="border px-4 py-2">
-            {{ liq.empleado?.persona?.apellido }} {{ liq.empleado?.persona?.nombre }}
-          </td>
-          <td class="border px-4 py-2">{{ liq.empleado?.persona?.cuil }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+      <table class="w-full text-sm text-left text-gray-700">
+        <thead class="text-xs uppercase bg-blue-600 text-white">
+          <tr>
+            <th scope="col" class="px-6 py-3">Código</th>
+            <th scope="col" class="px-6 py-3">Período</th>
+            <th scope="col" class="px-6 py-3">Empleado</th>
+            <th scope="col" class="px-6 py-3">CUIL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="liq in liquidaciones"
+            :key="liq.id"
+            class="odd:bg-white even:bg-gray-50 border-b hover:bg-blue-50 transition duration-150"
+          >
+            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+              {{ liq.id }}
+            </td>
+            <td class="px-6 py-4">{{ liq.periodo }}</td>
+            <td class="px-6 py-4">
+              {{ liq.empleado?.persona?.apellido }} {{ liq.empleado?.persona?.nombre }}
+            </td>
+            <td class="px-6 py-4">{{ liq.empleado?.persona?.cuil }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- Mensajes -->
-    <p v-if="loading" class="text-gray-500 mt-2">Cargando...</p>
-    <p v-if="!loading && liquidaciones.length === 0" class="text-red-500 mt-2">
-      {{ error || 'No se encontraron liquidaciones.' }}
-    </p>
+    <div v-if="loading" class="flex justify-center mt-4 text-gray-500">
+      ⏳ Cargando liquidaciones...
+    </div>
+    <div
+      v-if="!loading && liquidaciones.length === 0"
+      class="text-red-600 mt-4 text-center font-semibold"
+    >
+      {{ error || "⚠️ No se encontraron liquidaciones." }}
+    </div>
 
     <!-- Paginación -->
-    <div class="flex justify-between mt-4">
-      <button @click="cambiarPagina(page - 1)" :disabled="page <= 1">
-        Anterior
+    <div class="flex justify-between items-center mt-6">
+      <button
+        @click="cambiarPagina(page - 1)"
+        :disabled="page <= 1"
+        class="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        ⬅️ Anterior
       </button>
-      <span>Página {{ page }}</span>
-      <button @click="cambiarPagina(page + 1)" :disabled="!hayMas">
-        Siguiente
+      <span class="text-gray-700 font-medium">Página {{ page }}</span>
+      <button
+        @click="cambiarPagina(page + 1)"
+        :disabled="!hayMas"
+        class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Siguiente ➡️
       </button>
     </div>
   </div>
@@ -69,25 +98,19 @@ export default {
     async cargarLiquidaciones() {
       this.loading = true;
       try {
-        this.error = null; // Limpiar errores previos
+        this.error = null;
         const data = await getLiquidaciones(this.globalSearch, this.page);
         this.liquidaciones = data.data ?? data;
         this.hayMas = data.meta
           ? data.meta.current_page < data.meta.last_page
           : false;
       } catch (error) {
-        console.error('Error al cargar liquidaciones:', error);
+        console.error("Error al cargar liquidaciones:", error);
         this.liquidaciones = [];
-        
-        if (error.response?.status === 401) {
-          // Error de autenticación
-          this.error = 'Error de autenticación. Verificar token de Keycloak.';
-          console.error('Error de autenticación. Verificar token de Keycloak.');
-        } else {
-          // Otro tipo de error
-          this.error = `Error al cargar liquidaciones: ${error.message}`;
-          console.error('Error al cargar liquidaciones:', error.message);
-        }
+        this.error =
+          error.response?.status === 401
+            ? "Error de autenticación. Verificar token de Keycloak."
+            : `Error al cargar liquidaciones: ${error.message}`;
       } finally {
         this.loading = false;
       }
