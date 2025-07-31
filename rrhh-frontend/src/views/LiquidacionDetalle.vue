@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getLiquidacionById } from '@/services/LiquidacionesServices'
+import { getLiquidacionById, downloadLiquidacionPDF } from '@/services/LiquidacionesServices'
 
 const route = useRoute()
 const router = useRouter()
@@ -9,6 +9,22 @@ const router = useRouter()
 const liquidacion = ref(null)
 const loading = ref(true)
 const error = ref(null)
+
+const loadingPdf = ref(false)
+const errorPdf = ref(null)
+
+const verPDF = async () => {
+  loadingPdf.value = true
+  try {
+    const pdfUrl = await downloadLiquidacionPDF(route.params.id)
+    // Abrir en una nueva pestaña como PDF
+    window.open(pdfUrl, '_blank')
+  } catch (err) {
+    errorPdf.value = 'No se pudo generar el PDF'
+  } finally {
+    loadingPdf.value = false
+  }
+}
 
 onMounted(async () => {
   try {
@@ -99,6 +115,17 @@ const formatCurrency = (value) => {
       <!-- Neto a cobrar -->
       <div class="bg-green-50 border border-green-300 p-4 rounded-lg text-right text-xl font-bold text-green-800">
         Neto a cobrar: {{ formatCurrency(liquidacion.total_liquidado) }}
+      </div>
+
+      <div class="text-center mt-6">
+        <button
+          @click="verPDF"
+          :disabled="loadingPdf"
+          class="px-6 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 disabled:opacity-50"
+        >
+          📄 {{ loadingPdf ? "Generando PDF..." : "Ver PDF" }}
+        </button>
+        <p v-if="errorPdf" class="text-red-600 mt-2">{{ errorPdf }}</p>
       </div>
 
       <!-- Botón volver -->
