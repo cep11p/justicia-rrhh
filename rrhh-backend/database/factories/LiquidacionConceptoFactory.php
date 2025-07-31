@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Concepto;
 use App\Models\Liquidacion;
+use App\Models\ValorConcepto;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,10 +19,28 @@ class LiquidacionConceptoFactory extends Factory
      */
     public function definition(): array
     {
+        $liquidacion = Liquidacion::factory()->create();
+        $concepto = Concepto::factory()->create();
+
+        // Si el concepto tiene código "001", buscar el valor en valor_concepto
+        if ($concepto->codigo === '001') {
+            $valorConcepto = ValorConcepto::where('concepto_id', $concepto->id)
+                ->byPeriodo($liquidacion->periodo)
+                ->first();
+
+            if (!$valorConcepto) {
+                throw new \Exception("No se encontró un valor_concepto para el concepto con código '001' en el período '{$liquidacion->periodo}'");
+            }
+
+            $importe = $valorConcepto->valor;
+        } else {
+            throw new \Exception("No se puede generar un importe aleatorio para este concepto. Falta lógica específica para calcular el importe.");
+        }
+
         return [
-            'liquidacion_id' => Liquidacion::factory(),
-            'concepto_id' => Concepto::factory(),
-            'valor' => $this->faker->randomFloat(2, 1000, 500000),
+            'liquidacion_id' => $liquidacion->id,
+            'concepto_id' => $concepto->id,
+            'importe' => $importe,
         ];
     }
 
@@ -32,7 +51,7 @@ class LiquidacionConceptoFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'concepto_id' => Concepto::factory()->remunerativo(),
-            'valor' => $this->faker->randomFloat(2, 50000, 300000),
+            'importe' => $this->faker->randomFloat(2, 50000, 300000),
         ]);
     }
 
@@ -43,7 +62,7 @@ class LiquidacionConceptoFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'concepto_id' => Concepto::factory()->descuento(),
-            'valor' => $this->faker->randomFloat(2, 5000, 100000),
+            'importe' => $this->faker->randomFloat(2, 5000, 100000),
         ]);
     }
 
@@ -52,10 +71,31 @@ class LiquidacionConceptoFactory extends Factory
      */
     public function basico(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'concepto_id' => Concepto::factory()->basico(),
-            'valor' => $this->faker->randomFloat(2, 200000, 800000),
-        ]);
+        return $this->state(function (array $attributes) {
+            $liquidacion = Liquidacion::factory()->create();
+            $concepto = Concepto::factory()->basico();
+
+            // Si el concepto tiene código "001", buscar el valor en valor_concepto
+            if ($concepto->codigo === '001') {
+                $valorConcepto = ValorConcepto::where('concepto_id', $concepto->id)
+                    ->byPeriodo($liquidacion->periodo)
+                    ->first();
+
+                if (!$valorConcepto) {
+                    throw new \Exception("No se encontró un valor_concepto para el concepto con código '001' en el período '{$liquidacion->periodo}'");
+                }
+
+                $importe = $valorConcepto->valor;
+            } else {
+                $importe = $this->faker->randomFloat(2, 200000, 800000);
+            }
+
+            return [
+                'liquidacion_id' => $liquidacion->id,
+                'concepto_id' => $concepto->id,
+                'importe' => $importe,
+            ];
+        });
     }
 
     /**
@@ -65,7 +105,7 @@ class LiquidacionConceptoFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'concepto_id' => Concepto::factory()->jubilacion(),
-            'valor' => $this->faker->randomFloat(2, 20000, 100000),
+            'importe' => $this->faker->randomFloat(2, 20000, 100000),
         ]);
     }
 
@@ -75,7 +115,7 @@ class LiquidacionConceptoFactory extends Factory
     public function valorAlto(): static
     {
         return $this->state(fn (array $attributes) => [
-            'valor' => $this->faker->randomFloat(2, 300000, 1000000),
+            'importe' => $this->faker->randomFloat(2, 300000, 1000000),
         ]);
     }
 
@@ -85,7 +125,7 @@ class LiquidacionConceptoFactory extends Factory
     public function valorBajo(): static
     {
         return $this->state(fn (array $attributes) => [
-            'valor' => $this->faker->randomFloat(2, 1000, 50000),
+            'importe' => $this->faker->randomFloat(2, 1000, 50000),
         ]);
     }
 
@@ -94,9 +134,30 @@ class LiquidacionConceptoFactory extends Factory
      */
     public function conConcepto(Concepto $concepto): static
     {
-        return $this->state(fn (array $attributes) => [
-            'concepto_id' => $concepto->id,
-        ]);
+        return $this->state(function (array $attributes) use ($concepto) {
+            $liquidacion = Liquidacion::factory()->create();
+
+            // Si el concepto tiene código "001", buscar el valor en valor_concepto
+            if ($concepto->codigo === '001') {
+                $valorConcepto = ValorConcepto::where('concepto_id', $concepto->id)
+                    ->byPeriodo($liquidacion->periodo)
+                    ->first();
+
+                if (!$valorConcepto) {
+                    throw new \Exception("No se encontró un valor_concepto para el concepto con código '001' en el período '{$liquidacion->periodo}'");
+                }
+
+                $importe = $valorConcepto->valor;
+            } else {
+                $importe = $this->faker->randomFloat(2, 1000, 500000);
+            }
+
+            return [
+                'liquidacion_id' => $liquidacion->id,
+                'concepto_id' => $concepto->id,
+                'importe' => $importe,
+            ];
+        });
     }
 
     /**
@@ -105,7 +166,38 @@ class LiquidacionConceptoFactory extends Factory
     public function conValor(float $valor): static
     {
         return $this->state(fn (array $attributes) => [
-            'valor' => $valor,
+            'importe' => $valor,
         ]);
+    }
+
+    /**
+     * Concepto con código 001 usando valor_concepto
+     */
+    public function conCodigo001(): static
+    {
+        return $this->state(function (array $attributes) {
+            $liquidacion = Liquidacion::factory()->create();
+            $concepto = Concepto::where('codigo', '001')->first();
+
+            if (!$concepto) {
+                $concepto = Concepto::factory()->create(['codigo' => '001']);
+            }
+
+            $valorConcepto = ValorConcepto::where('concepto_id', $concepto->id)
+                ->byPeriodo($liquidacion->periodo)
+                ->first();
+
+            if (!$valorConcepto) {
+                throw new \Exception("No se encontró un valor_concepto para el concepto con código '001' en el período '{$liquidacion->periodo}'");
+            }
+
+            $importe = $valorConcepto->valor;
+
+            return [
+                'liquidacion_id' => $liquidacion->id,
+                'concepto_id' => $concepto->id,
+                'importe' => $importe,
+            ];
+        });
     }
 }

@@ -16,14 +16,17 @@ class LiquidacionFactory extends Factory
      */
     public function definition(): array
     {
-        $periodo = $this->faker->numerify('2024##');
+        $anio = $this->faker->numberBetween(2015, 2024);
+        $mes = $this->faker->numberBetween(1, 12);
+        $periodo = sprintf('%04d%02d', $anio, $mes);
         $fechaLiquidacion = \Carbon\Carbon::createFromFormat('Ym', $periodo)->endOfMonth();
 
         return [
-            'numero' => $this->faker->unique()->numberBetween(1, 999),
+            'numero' => $this->faker->unique()->numberBetween(1000, 2000),
             'periodo' => $periodo,
             'fecha_liquidacion' => $fechaLiquidacion,
-            'descripcion' => $this->faker->sentence(6),
+            'observaciones' => $this->faker->sentence(6),
+            'empleado_id' => \App\Models\Empleado::factory(),
         ];
     }
 

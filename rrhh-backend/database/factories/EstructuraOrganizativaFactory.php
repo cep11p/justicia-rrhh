@@ -17,28 +17,12 @@ class EstructuraOrganizativaFactory extends Factory
     public function definition(): array
     {
         $nombres = [
-            'Dirección General', 'Recursos Humanos', 'Finanzas', 'Tecnología',
-            'Operaciones', 'Marketing', 'Ventas', 'Administración',
-            'Contabilidad', 'Sistemas', 'Mantenimiento', 'Seguridad',
-            'Logística', 'Calidad', 'Investigación y Desarrollo'
+            'Recursos Humanos', 'Administración'
         ];
 
         $descripciones = [
-            'Departamento responsable de la gestión estratégica y toma de decisiones ejecutivas',
             'Área encargada de la gestión del capital humano y desarrollo organizacional',
-            'Departamento de gestión financiera, contabilidad y control de costos',
-            'Área de tecnología de la información y sistemas informáticos',
-            'Departamento de operaciones diarias y servicios de apoyo',
-            'Área de promoción y comunicación de productos y servicios',
-            'Departamento de ventas y atención al cliente',
-            'Área de gestión administrativa y coordinación de procesos',
-            'Departamento de contabilidad general y reportes financieros',
-            'Área de desarrollo de software y infraestructura tecnológica',
-            'Departamento de mantenimiento de instalaciones y equipos',
-            'Área de seguridad física y control de acceso',
-            'Departamento de gestión de inventarios y distribución',
-            'Área de control de calidad y mejora continua',
-            'Departamento de investigación, desarrollo e innovación'
+            'Área de gestión administrativa y coordinación de procesos'
         ];
 
         return [
@@ -51,20 +35,20 @@ class EstructuraOrganizativaFactory extends Factory
     /**
      * Indica que la estructura es hija de otra
      */
-    public function hijaDe($padreId): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'padre_id' => $padreId,
-        ]);
-    }
+    // public function hijaDe($padreId): static
+    // {
+    //     return $this->state(fn (array $attributes) => [
+    //         'padre_id' => $padreId,
+    //     ]);
+    // }
 
     /**
      * Indica que la estructura es raíz (sin padre)
      */
-    public function raiz(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'padre_id' => null,
-        ]);
-    }
+    // public function raiz(): static
+    // {
+    //     return $this->state(fn (array $attributes) => [
+    //         'padre_id' => null,
+    //     ]);
+    // }
 }

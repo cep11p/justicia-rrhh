@@ -20,7 +20,7 @@ class DesignacionFactory extends Factory
     public function definition(): array
     {
         return [
-            'fecha_inicio' => $this->faker->dateTimeBetween('-2 years', '-1 month'),
+            'fecha_inicio' => $this->faker->dateTimeBetween('-4 years', '-1 month'),
             'fecha_fin' => $this->faker->optional(0.2)->dateTimeBetween('-1 month', 'now'), // 20% de probabilidad de tener fecha fin
             'empleado_id' => Empleado::factory(),
             'estructura_organizativa_id' => EstructuraOrganizativa::factory(),

@@ -17,7 +17,7 @@ class EmpleadoFactory extends Factory
      */
     public function definition(): array
     {
-        $titulos = ['universitario', 'terciario', 'secundario', 'sin_titulo'];
+        $titulos = ['universitario', 'terciario', 'sin_titulo'];
 
         return [
             'persona_id' => Persona::factory(),

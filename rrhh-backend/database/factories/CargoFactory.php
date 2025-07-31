@@ -17,23 +17,11 @@ class CargoFactory extends Factory
     public function definition(): array
     {
         $cargos = [
-            'Analista Senior' => 'Responsable de análisis avanzado y coordinación de proyectos especializados',
-            'Analista' => 'Encargado de análisis de datos y generación de reportes',
-            'Asistente' => 'Apoyo en tareas administrativas y operativas',
-            'Coordinador' => 'Responsable de coordinar actividades y supervisar equipos de trabajo',
-            'Supervisor' => 'Encargado de supervisar operaciones y personal asignado',
-            'Técnico' => 'Especialista en tareas técnicas y operativas',
-            'Especialista' => 'Profesional especializado en área específica',
-            'Consultor' => 'Asesor experto en temas especializados',
-            'Director' => 'Responsable de la dirección estratégica del área',
-            'Gerente' => 'Encargado de la gestión operativa y administrativa',
-            'Jefe de Área' => 'Responsable de la gestión y coordinación del área',
-            'Operador' => 'Encargado de operaciones específicas del área',
-            'Desarrollador' => 'Responsable del desarrollo de software y aplicaciones',
-            'Administrador' => 'Encargado de la administración de sistemas y recursos',
-            'Contador' => 'Responsable de la contabilidad y reportes financieros'
+            'Administrativo Senior' => 'Responsable de la gestión administrativa avanzada y coordinación de procesos internos',
+            'Asistente Administrativo' => 'Apoyo en tareas administrativas y gestión de documentación',
+            'Analista de RRHH' => 'Responsable de la gestión del personal, selección y desarrollo organizacional',
+            'Asistente de RRHH' => 'Apoyo en tareas de recursos humanos y gestión de personal'
         ];
-
         $cargo = $this->faker->unique()->randomElement(array_keys($cargos));
         $descripcion = $cargos[$cargo];
 
