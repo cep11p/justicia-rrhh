@@ -136,7 +136,7 @@ class LiquidacionService
 
         return $query->with([
             'empleado.persona'
-            ])->get();
+            ])->paginate(10);
     }
 
     /**
