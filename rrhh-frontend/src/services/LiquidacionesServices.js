@@ -53,4 +53,25 @@ export const getLiquidacionById = async (id) => {
   }
 }
 
+/**
+ * Descarga el PDF de una liquidación
+ * @param {number} id - ID de la liquidación
+ * @returns {Promise<string>} - URL del PDF
+ */
+export const downloadLiquidacionPDF = async (id) => {
+  try {
+    const response = await api.get(`/liquidacion/view-to-pdf/${id}`, {
+      responseType: 'blob'
+    })
+
+    // Crear un objeto Blob con el tipo correcto
+    const file = new Blob([response.data], { type: 'application/pdf' })
+    const fileURL = URL.createObjectURL(file)
+    return fileURL
+  } catch (error) {
+    console.error(`Error al descargar PDF con id ${id}:`, error)
+    throw error
+  }
+}
+
 
