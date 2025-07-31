@@ -26,6 +26,7 @@
             <th scope="col" class="px-6 py-3">Período</th>
             <th scope="col" class="px-6 py-3">Empleado</th>
             <th scope="col" class="px-6 py-3">CUIL</th>
+            <th scope="col" class="px-6 py-3">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -42,6 +43,14 @@
               {{ liq.empleado?.persona?.apellido }} {{ liq.empleado?.persona?.nombre }}
             </td>
             <td class="px-6 py-4">{{ liq.empleado?.persona?.cuil }}</td>
+            <td class="px-6 py-4">
+              <router-link 
+                :to="`/liquidacion/${liq.id}`"
+                class="text-blue-600 hover:underline font-medium"
+              >
+                Ver detalle
+              </router-link>
+            </td>
           </tr>
         </tbody>
       </table>
