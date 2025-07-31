@@ -18,7 +18,7 @@ class EmpleadoResource extends JsonResource
             'id' => $this->id,
             'fecha_ingreso' => $this->fecha_ingreso,
             'titulo' => $this->titulo,
-            'nombre_completo' => $this->nombre_completo,
+            'nombre_completo' => $this->nombreCompleto,
             'legajo' => $this->legajo,
             'cuil' => $this->whenLoaded('persona', function () {
                 return $this->persona->cuil;

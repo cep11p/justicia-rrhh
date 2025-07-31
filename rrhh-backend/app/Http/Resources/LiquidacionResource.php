@@ -18,7 +18,7 @@ class LiquidacionResource extends JsonResource
             'id' => $this->id,
             'numero' => $this->numero,
             'periodo' => $this->periodo,
-            'empleado' => $this->empleado,
+            'empleado' => new EmpleadoResource($this->empleado),
             'remunerativos' => LiquidacionConceptoResource::collection($this->conceptosRemunerativos),
             'no_remunerativos' => LiquidacionConceptoResource::collection($this->conceptosNoRemunerativos),
             'total_remunerativos' => $this->total_remunerativos,
