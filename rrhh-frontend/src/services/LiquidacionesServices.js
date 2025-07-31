@@ -38,4 +38,19 @@ export const getLiquidaciones = async (globalSearch = '', page = 1, filtros = {}
   }
 }
 
+/**
+   * Obtiene el detalle de una liquidación por ID
+   * @param {number} id - ID de la liquidación
+   * @returns {Promise<object>} - Datos de la liquidación
+   */
+export const getLiquidacionById = async (id) => {
+  try {
+    const response = await api.get(`/liquidacion/show/${id}`)
+    return response.data.data
+  } catch (error) {
+    console.error(`Error al obtener la liquidación con id ${id}:`, error)
+    throw error
+  }
+}
+
 
