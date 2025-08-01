@@ -89,4 +89,8 @@ export const downloadLiquidacionPDF = async (id) => {
   }
 }
 
+export function deleteLiquidacion(id) {
+  return api.delete(`/liquidacion/delete/${id}`);
+}
+
 

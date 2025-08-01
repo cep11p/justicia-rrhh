@@ -58,13 +58,24 @@
               {{ liq.empleado?.nombre_completo }}
             </td>
             <td class="px-6 py-4">{{ liq.empleado?.cuil }}</td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-4 flex justify-center gap-4">
+              <!-- Ver detalle -->
               <router-link 
                 :to="`/liquidacion/${liq.id}`"
-                class="text-blue-600 hover:underline font-medium"
+                class="text-blue-600 hover:text-blue-800"
+                title="Ver detalle"
               >
-                Ver detalle
+                <EyeIcon class="h-5 w-5"/>
               </router-link>
+
+              <!-- Eliminar -->
+              <button
+                @click="confirmarEliminacion(liq.id)"
+                class="text-red-600 hover:text-red-800"
+                title="Eliminar liquidación"
+              >
+                <TrashIcon class="h-5 w-5"/>
+              </button>
             </td>
           </tr>
         </tbody>
@@ -104,13 +115,18 @@
 </template>
 
 <script>
-import { getLiquidaciones,crearLiquidacionApi } from "@/services/LiquidacionesServices";
+import { getLiquidaciones, crearLiquidacionApi, deleteLiquidacion } from "@/services/LiquidacionesServices";
 import LiquidacionModal from "@/components/LiquidacionModal.vue";
+import { EyeIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import axios from "axios";
+
 
 export default {
   name: "LiquidacionTable",
   components: {
     LiquidacionModal, // importamos el modal
+    EyeIcon,
+    TrashIcon,
   },
   data() {
     return {
@@ -183,6 +199,19 @@ export default {
           error.response?.data?.message || "⚠️ No se pudo crear la liquidación.";
       } finally {
         this.loading = false;
+      }
+    },
+
+    async confirmarEliminacion(id) {
+      if (!confirm("¿Estás seguro que querés eliminar esta liquidación?")) return;
+
+      try {
+        await deleteLiquidacion(id);
+        this.liquidaciones = this.liquidaciones.filter(l => l.id !== id);
+        alert("Liquidación eliminada correctamente ✅");
+      } catch (error) {
+        console.error("Error al eliminar liquidación:", error);
+        alert("No se pudo eliminar la liquidación ❌");
       }
     },
   },
