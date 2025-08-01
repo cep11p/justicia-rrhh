@@ -6,16 +6,31 @@
       Listado de Liquidaciones
     </h2>
 
-    <!-- Buscador -->
-    <div class="mb-4">
+    <!-- Barra de búsqueda + botón -->
+    <div class="mb-4 flex items-center gap-4">
       <input
         v-model="globalSearch"
         @input="buscar"
         type="text"
-        placeholder="Buscar liquidación (nombre, apellido, CUIL, período...)"
-        class="w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+        placeholder="Buscar liquidación..."
+        class="flex-1 border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
       />
+
+      <button
+        @click="isModalOpen = true"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700"
+      >
+        ➕ Liquidación
+      </button>
     </div>
+
+    <!-- Modal -->
+    <LiquidacionModal
+      :isOpen="isModalOpen"
+      :form="form"
+      @close="isModalOpen = false"
+      @save="crearLiquidacion"
+    />
 
     <!-- Tabla -->
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
@@ -89,10 +104,14 @@
 </template>
 
 <script>
-import { getLiquidaciones } from "@/services/LiquidacionesServices";
+import { getLiquidaciones,crearLiquidacionApi } from "@/services/LiquidacionesServices";
+import LiquidacionModal from "@/components/LiquidacionModal.vue";
 
 export default {
   name: "LiquidacionTable",
+  components: {
+    LiquidacionModal, // importamos el modal
+  },
   data() {
     return {
       liquidaciones: [],
@@ -101,6 +120,13 @@ export default {
       loading: false,
       hayMas: false,
       error: null,
+
+      // estado del modal y formulario
+      isModalOpen: false,
+      form: {
+        periodo: "",
+        empleado: "",
+      },
     };
   },
   methods: {
@@ -131,6 +157,33 @@ export default {
     cambiarPagina(nueva) {
       this.page = nueva;
       this.cargarLiquidaciones();
+    },
+
+    async crearLiquidacion(nuevaLiq) {
+      console.log("✅ Formulario recibido desde el modal:", nuevaLiq);
+
+      try {
+        this.loading = true;
+        await crearLiquidacionApi(nuevaLiq);
+
+        // cerrar modal
+        this.isModalOpen = false;
+
+        // resetear formulario
+        this.form = { periodo: "", empleado: "" };
+
+        // refrescar tabla
+        await this.cargarLiquidaciones();
+
+        // alerta de éxito
+        alert("✅ Liquidación creada con éxito");
+      } catch (error) {
+        console.error("❌ Error al crear liquidación:", error);
+        this.error =
+          error.response?.data?.message || "⚠️ No se pudo crear la liquidación.";
+      } finally {
+        this.loading = false;
+      }
     },
   },
   mounted() {

@@ -136,7 +136,7 @@ class LiquidacionService
 
         return $query->with([
             'empleado.persona'
-            ])->paginate(10);
+        ])->orderBy('created_at', 'desc')->paginate(10);
     }
 
     /**
