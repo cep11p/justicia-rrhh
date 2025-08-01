@@ -55,9 +55,9 @@
             </td>
             <td class="px-6 py-4">{{ liq.periodo }}</td>
             <td class="px-6 py-4">
-              {{ liq.empleado?.persona?.apellido }} {{ liq.empleado?.persona?.nombre }}
+              {{ liq.empleado?.nombre_completo }}
             </td>
-            <td class="px-6 py-4">{{ liq.empleado?.persona?.cuil }}</td>
+            <td class="px-6 py-4">{{ liq.empleado?.cuil }}</td>
             <td class="px-6 py-4">
               <router-link 
                 :to="`/liquidacion/${liq.id}`"
