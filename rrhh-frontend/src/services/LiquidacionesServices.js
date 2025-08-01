@@ -1,5 +1,20 @@
 import api from './api'
 
+
+/**
+ * Crea una nueva liquidación
+ * @param {*} payload 
+ * @returns {Promise<object>} - Datos de la liquidación creada
+ */
+export async function crearLiquidacionApi(payload) {
+  const response = await api.post('/liquidacion/store', payload, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  return response.data;
+}
+
 /**
  * Obtiene las liquidaciones con filtros opcionales
  * @param {string} globalSearch - Término de búsqueda global
